@@ -3,6 +3,6 @@ package main
 import "fmt"
 
 func main() {
-	err := parse([]byte("12"))
-	fmt.Println(err)
+	expr, err := parse([]byte("12"))
+	fmt.Println(expr, err)
 }

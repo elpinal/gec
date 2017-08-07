@@ -24,7 +24,8 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:22
+//line parser.y:27
+
 //line yacctab:1
 var yyExca = [...]int{
 	-1, 1,
@@ -415,9 +416,12 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:17
+		//line parser.y:19
 		{
-			yyVAL = yyDollar[1]
+			yyVAL.num = yyDollar[1].num
+			if l, ok := yylex.(*exprLexer); ok {
+				l.expr = yyVAL.num
+			}
 		}
 	}
 	goto yystack /* stack new state and value */

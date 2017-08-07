@@ -17,6 +17,8 @@ type exprLexer struct {
 	peek rune
 	err  error
 
+	expr int
+
 	off int // information for error messages
 }
 
@@ -89,11 +91,11 @@ func (x *exprLexer) Error(s string) {
 	x.err = fmt.Errorf("parse error (offset: %d, peek: %q): %s", x.off, x.peek, s)
 }
 
-func parse(line []byte) error {
+func parse(line []byte) (int, error) {
 	l := exprLexer{line: line}
 	yyParse(&l)
 	if l.err != nil {
-		return l.err
+		return 0, l.err
 	}
-	return nil
+	return l.expr, nil
 }

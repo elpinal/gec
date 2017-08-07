@@ -17,7 +17,7 @@ state 1
 state 2
 	pattern:  NUM.    (1)
 
-	.  reduce 1 (src line 15)
+	.  reduce 1 (src line 17)
 
 
 4 terminals, 2 nonterminals
