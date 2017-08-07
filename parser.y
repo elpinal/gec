@@ -8,13 +8,13 @@ package main
         num int
 }
 
-%type <num> pattern
+%type <num> expr
 
 %token <num> NUM
 
 %%
 
-pattern:
+expr:
 	NUM
         {
                 $$ = $1
