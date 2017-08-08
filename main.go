@@ -58,10 +58,10 @@ func gen(builder llvm.Builder, expr ast.Expr) llvm.Value {
 	case *ast.Int:
 		a := builder.CreateAlloca(llvm.Int32Type(), "a")
 		builder.CreateStore(llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), a)
-		return a
+		return builder.CreateLoad(a, "a")
 	case *ast.Add:
-		v1 := builder.CreateLoad(gen(builder, x.X), "v1")
-		v2 := builder.CreateLoad(gen(builder, x.Y), "v2")
+		v1 := gen(builder, x.X)
+		v2 := gen(builder, x.Y)
 		return builder.CreateAdd(v1, v2, "add")
 	}
 	panic("unreachable")
