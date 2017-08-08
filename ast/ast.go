@@ -21,3 +21,15 @@ type Sub struct {
 }
 
 func (x *Sub) expr() {}
+
+type Mul struct {
+	X, Y Expr
+}
+
+func (x *Mul) expr() {}
+
+type Div struct {
+	X, Y Expr
+}
+
+func (x *Div) expr() {}

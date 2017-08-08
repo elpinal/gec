@@ -22,6 +22,8 @@ var yyToknames = [...]string{
 	"NUM",
 	"'+'",
 	"'-'",
+	"'*'",
+	"'/'",
 }
 var yyStatenames = [...]string{}
 
@@ -29,7 +31,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:44
+//line parser.y:63
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -40,35 +42,39 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 7
+const yyLast = 13
 
 var yyAct = [...]int{
 
-	4, 5, 7, 6, 3, 2, 1,
+	4, 8, 9, 5, 3, 6, 7, 2, 1, 12,
+	13, 10, 11,
 }
 var yyPact = [...]int{
 
-	0, -1000, -5, -1000, -1, -2, -1000, -1000,
+	-1, -1000, 0, -6, -1000, -1000, -1, -1, -1, -1,
+	-6, -6, -1000, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 6, 5,
+	0, 8, 7, 4, 0,
 }
 var yyR1 = [...]int{
 
-	0, 1, 2, 2, 2,
+	0, 1, 2, 2, 2, 3, 3, 3, 4,
 }
 var yyR2 = [...]int{
 
-	0, 1, 1, 3, 3,
+	0, 1, 1, 3, 3, 1, 3, 3, 1,
 }
 var yyChk = [...]int{
 
-	-1000, -1, -2, 4, 5, 6, 4, 4,
+	-1000, -1, -2, -3, -4, 4, 5, 6, 7, 8,
+	-3, -3, -4, -4,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 2, 0, 0, 3, 4,
+	0, -2, 1, 2, 5, 8, 0, 0, 0, 0,
+	3, 4, 6, 7,
 }
 var yyTok1 = [...]int{
 
@@ -76,7 +82,7 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 5, 3, 6,
+	3, 3, 7, 5, 3, 6, 3, 8,
 }
 var yyTok2 = [...]int{
 
@@ -436,19 +442,43 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:31
 		{
-			yyVAL.expr = &ast.Int{X: yyDollar[1].num}
+			yyVAL.expr = yyDollar[1].expr
 		}
 	case 3:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:35
 		{
-			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: &ast.Int{X: yyDollar[3].num}}
+			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: yyDollar[3].expr}
 		}
 	case 4:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:39
 		{
-			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: &ast.Int{X: yyDollar[3].num}}
+			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
+	case 5:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:45
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 6:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:49
+		{
+			yyVAL.expr = &ast.Mul{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
+	case 7:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:53
+		{
+			yyVAL.expr = &ast.Div{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
+	case 8:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:59
+		{
+			yyVAL.expr = &ast.Int{X: yyDollar[1].num}
 		}
 	}
 	goto yystack /* stack new state and value */

@@ -1,71 +1,129 @@
 
 state 0
-	$accept: .expr $end 
+	$accept: .top $end 
 
-	NUM  shift 3
+	NUM  shift 5
 	.  error
 
-	expr  goto 1
-	term  goto 2
+	top  goto 1
+	expr  goto 2
+	term  goto 3
+	factor  goto 4
 
 state 1
-	$accept:  expr.$end 
+	$accept:  top.$end 
 
 	$end  accept
 	.  error
 
 
 state 2
-	expr:  term.    (1)
-	term:  term.'+' NUM 
-	term:  term.'-' NUM 
+	top:  expr.    (1)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
 
-	'+'  shift 4
-	'-'  shift 5
+	'+'  shift 6
+	'-'  shift 7
 	.  reduce 1 (src line 20)
 
 
 state 3
-	term:  NUM.    (2)
+	expr:  term.    (2)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
+	'*'  shift 8
+	'/'  shift 9
 	.  reduce 2 (src line 29)
 
 
 state 4
-	term:  term '+'.NUM 
+	term:  factor.    (5)
 
-	NUM  shift 6
-	.  error
+	.  reduce 5 (src line 43)
 
 
 state 5
-	term:  term '-'.NUM 
+	factor:  NUM.    (8)
 
-	NUM  shift 7
-	.  error
+	.  reduce 8 (src line 57)
 
 
 state 6
-	term:  term '+' NUM.    (3)
+	expr:  expr '+'.term 
 
+	NUM  shift 5
+	.  error
+
+	term  goto 10
+	factor  goto 4
+
+state 7
+	expr:  expr '-'.term 
+
+	NUM  shift 5
+	.  error
+
+	term  goto 11
+	factor  goto 4
+
+state 8
+	term:  term '*'.factor 
+
+	NUM  shift 5
+	.  error
+
+	factor  goto 12
+
+state 9
+	term:  term '/'.factor 
+
+	NUM  shift 5
+	.  error
+
+	factor  goto 13
+
+state 10
+	expr:  expr '+' term.    (3)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
+
+	'*'  shift 8
+	'/'  shift 9
 	.  reduce 3 (src line 34)
 
 
-state 7
-	term:  term '-' NUM.    (4)
+state 11
+	expr:  expr '-' term.    (4)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
+	'*'  shift 8
+	'/'  shift 9
 	.  reduce 4 (src line 38)
 
 
-6 terminals, 3 nonterminals
-5 grammar rules, 8/8000 states
+state 12
+	term:  term '*' factor.    (6)
+
+	.  reduce 6 (src line 48)
+
+
+state 13
+	term:  term '/' factor.    (7)
+
+	.  reduce 7 (src line 52)
+
+
+8 terminals, 5 nonterminals
+9 grammar rules, 14/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-52 working sets used
-memory: parser 1/120000
+54 working sets used
+memory: parser 9/120000
 0 extra closures
-5 shift entries, 1 exceptions
-2 goto entries
-0 entries saved by goto default
-Optimizer space used: output 7/120000
-7 table entries, 0 zero
-maximum spread: 6, maximum offset: 5
+13 shift entries, 1 exceptions
+8 goto entries
+2 entries saved by goto default
+Optimizer space used: output 13/120000
+13 table entries, 0 zero
+maximum spread: 8, maximum offset: 9

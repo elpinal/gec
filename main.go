@@ -67,6 +67,14 @@ func gen(builder llvm.Builder, expr ast.Expr) llvm.Value {
 		v1 := gen(builder, x.X)
 		v2 := gen(builder, x.Y)
 		return builder.CreateSub(v1, v2, "sub")
+	case *ast.Mul:
+		v1 := gen(builder, x.X)
+		v2 := gen(builder, x.Y)
+		return builder.CreateMul(v1, v2, "sub")
+	case *ast.Div:
+		v1 := gen(builder, x.X)
+		v2 := gen(builder, x.Y)
+		return builder.CreateUDiv(v1, v2, "sub")
 	}
 	panic("unreachable")
 }
