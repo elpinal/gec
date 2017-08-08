@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	logFile := flag.String("log", "", "specify `logfile` to output ")
+	logFile := flag.String("log", "", "specify `filename` to output LLVM IR")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		return
