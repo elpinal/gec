@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/elpinal/gec/ast"
@@ -10,13 +12,15 @@ import (
 )
 
 func main() {
-	if len(os.Args) == 1 {
+	logFile := flag.String("log", "", "specify `logfile` to output ")
+	flag.Parse()
+	if flag.NArg() < 1 {
 		return
 	}
-	run([]byte(os.Args[1]))
+	run([]byte(flag.Arg(0)), logFile)
 }
 
-func run(input []byte) {
+func run(input []byte, logFile *string) {
 	builder := llvm.NewBuilder()
 	mod := llvm.NewModule("gec")
 
@@ -29,17 +33,16 @@ func run(input []byte) {
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 	}
-	v := gen(builder, expr)
-	a := builder.CreateAlloca(llvm.Int32Type(), "a")
-	builder.CreateStore(v, a)
+	a := gen(builder, expr)
 
-	aVal := builder.CreateLoad(a, "a_val")
-	builder.CreateRet(aVal)
+	builder.CreateRet(a)
 
 	if err := llvm.VerifyModule(mod, llvm.ReturnStatusAction); err != nil {
 		fmt.Fprintln(os.Stdout, err)
 	}
-	//mod.Dump()
+	if logFile != nil {
+		ioutil.WriteFile(*logFile, []byte(mod.String()), 0666)
+	}
 
 	engine, err := llvm.NewExecutionEngine(mod)
 	if err != nil {
@@ -53,11 +56,13 @@ func run(input []byte) {
 func gen(builder llvm.Builder, expr ast.Expr) llvm.Value {
 	switch x := expr.(type) {
 	case *ast.Int:
-		return llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false)
+		a := builder.CreateAlloca(llvm.Int32Type(), "a")
+		builder.CreateStore(llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), a)
+		return a
 	case *ast.Add:
-		v1 := gen(builder, x.X)
-		v2 := gen(builder, x.Y)
-		return llvm.ConstAdd(v1, v2)
+		v1 := builder.CreateLoad(gen(builder, x.X), "v1")
+		v2 := builder.CreateLoad(gen(builder, x.Y), "v2")
+		return builder.CreateAdd(v1, v2, "add")
 	}
 	panic("unreachable")
 }
