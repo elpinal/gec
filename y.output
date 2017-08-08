@@ -1,34 +1,56 @@
 
 state 0
-	$accept: .pattern $end 
+	$accept: .expr $end 
 
-	NUM  shift 2
+	NUM  shift 3
 	.  error
 
-	pattern  goto 1
+	expr  goto 1
+	term  goto 2
 
 state 1
-	$accept:  pattern.$end 
+	$accept:  expr.$end 
 
 	$end  accept
 	.  error
 
 
 state 2
-	pattern:  NUM.    (1)
+	expr:  term.    (1)
+	term:  term.'+' NUM 
 
-	.  reduce 1 (src line 17)
+	'+'  shift 4
+	.  reduce 1 (src line 20)
 
 
-4 terminals, 2 nonterminals
-2 grammar rules, 3/8000 states
+state 3
+	term:  NUM.    (2)
+
+	.  reduce 2 (src line 29)
+
+
+state 4
+	term:  term '+'.NUM 
+
+	NUM  shift 5
+	.  error
+
+
+state 5
+	term:  term '+' NUM.    (3)
+
+	.  reduce 3 (src line 34)
+
+
+5 terminals, 3 nonterminals
+4 grammar rules, 6/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-51 working sets used
-memory: parser 0/120000
+52 working sets used
+memory: parser 1/120000
 0 extra closures
-1 shift entries, 1 exceptions
-1 goto entries
+3 shift entries, 1 exceptions
+2 goto entries
 0 entries saved by goto default
-Optimizer space used: output 2/120000
-2 table entries, 0 zero
-maximum spread: 4, maximum offset: 4
+Optimizer space used: output 5/120000
+5 table entries, 0 zero
+maximum spread: 5, maximum offset: 5

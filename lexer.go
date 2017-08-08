@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"strconv"
 	"unicode/utf8"
+
+	"github.com/elpinal/gec/ast"
 )
 
 const eof = 0
@@ -17,7 +19,7 @@ type exprLexer struct {
 	peek rune
 	err  error
 
-	expr int
+	expr ast.Expr
 
 	off int // information for error messages
 }
@@ -30,7 +32,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			return eof
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			return x.num(c, yylval)
-		case '=':
+		case '=', '+':
 			return int(c)
 		case ' ':
 		default:
@@ -91,11 +93,11 @@ func (x *exprLexer) Error(s string) {
 	x.err = fmt.Errorf("parse error (offset: %d, peek: %q): %s", x.off, x.peek, s)
 }
 
-func parse(line []byte) (int, error) {
+func parse(line []byte) (ast.Expr, error) {
 	l := exprLexer{line: line}
 	yyParse(&l)
 	if l.err != nil {
-		return 0, l.err
+		return nil, l.err
 	}
 	return l.expr, nil
 }

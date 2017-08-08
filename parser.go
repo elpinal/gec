@@ -4,10 +4,13 @@ package main
 import __yyfmt__ "fmt"
 
 //line parser.y:3
-//line parser.y:7
+import "github.com/elpinal/gec/ast"
+
+//line parser.y:9
 type yySymType struct {
-	yys int
-	num int
+	yys  int
+	expr ast.Expr
+	num  int
 }
 
 const NUM = 57346
@@ -17,6 +20,7 @@ var yyToknames = [...]string{
 	"error",
 	"$unk",
 	"NUM",
+	"'+'",
 }
 var yyStatenames = [...]string{}
 
@@ -24,7 +28,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:27
+//line parser.y:40
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -35,39 +39,43 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 2
+const yyLast = 5
 
 var yyAct = [...]int{
 
-	2, 1,
+	4, 5, 3, 2, 1,
 }
 var yyPact = [...]int{
 
-	-4, -1000, -1000,
+	-2, -1000, -5, -1000, -3, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 1,
+	0, 4, 3,
 }
 var yyR1 = [...]int{
 
-	0, 1,
+	0, 1, 2, 2,
 }
 var yyR2 = [...]int{
 
-	0, 1,
+	0, 1, 1, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -1, 4,
+	-1000, -1, -2, 4, 5, 4,
 }
 var yyDef = [...]int{
 
-	0, -2, 1,
+	0, -2, 1, 2, 0, 3,
 }
 var yyTok1 = [...]int{
 
-	1,
+	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 5,
 }
 var yyTok2 = [...]int{
 
@@ -416,12 +424,24 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:19
+		//line parser.y:22
 		{
-			yyVAL.num = yyDollar[1].num
+			yyVAL.expr = yyDollar[1].expr
 			if l, ok := yylex.(*exprLexer); ok {
-				l.expr = yyVAL.num
+				l.expr = yyVAL.expr
 			}
+		}
+	case 2:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:31
+		{
+			yyVAL.expr = &ast.Int{X: yyDollar[1].num}
+		}
+	case 3:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:35
+		{
+			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: &ast.Int{X: yyDollar[3].num}}
 		}
 	}
 	goto yystack /* stack new state and value */
