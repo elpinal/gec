@@ -35,6 +35,10 @@ term:
         {
                 $$ = &ast.Add{X: $1, Y: &ast.Int{X: $3}}
         }
+|	term '-' NUM
+        {
+                $$ = &ast.Sub{X: $1, Y: &ast.Int{X: $3}}
+        }
 
 
 %%

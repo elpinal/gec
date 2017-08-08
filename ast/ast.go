@@ -15,3 +15,9 @@ type Add struct {
 }
 
 func (x *Add) expr() {}
+
+type Sub struct {
+	X, Y Expr
+}
+
+func (x *Sub) expr() {}

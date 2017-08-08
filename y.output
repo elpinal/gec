@@ -18,8 +18,10 @@ state 1
 state 2
 	expr:  term.    (1)
 	term:  term.'+' NUM 
+	term:  term.'-' NUM 
 
 	'+'  shift 4
+	'-'  shift 5
 	.  reduce 1 (src line 20)
 
 
@@ -32,25 +34,38 @@ state 3
 state 4
 	term:  term '+'.NUM 
 
-	NUM  shift 5
+	NUM  shift 6
 	.  error
 
 
 state 5
+	term:  term '-'.NUM 
+
+	NUM  shift 7
+	.  error
+
+
+state 6
 	term:  term '+' NUM.    (3)
 
 	.  reduce 3 (src line 34)
 
 
-5 terminals, 3 nonterminals
-4 grammar rules, 6/8000 states
+state 7
+	term:  term '-' NUM.    (4)
+
+	.  reduce 4 (src line 38)
+
+
+6 terminals, 3 nonterminals
+5 grammar rules, 8/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
 52 working sets used
 memory: parser 1/120000
 0 extra closures
-3 shift entries, 1 exceptions
+5 shift entries, 1 exceptions
 2 goto entries
 0 entries saved by goto default
-Optimizer space used: output 5/120000
-5 table entries, 0 zero
-maximum spread: 5, maximum offset: 5
+Optimizer space used: output 7/120000
+7 table entries, 0 zero
+maximum spread: 6, maximum offset: 5

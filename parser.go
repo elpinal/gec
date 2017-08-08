@@ -21,6 +21,7 @@ var yyToknames = [...]string{
 	"$unk",
 	"NUM",
 	"'+'",
+	"'-'",
 }
 var yyStatenames = [...]string{}
 
@@ -28,7 +29,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:40
+//line parser.y:44
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -39,35 +40,35 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 5
+const yyLast = 7
 
 var yyAct = [...]int{
 
-	4, 5, 3, 2, 1,
+	4, 5, 7, 6, 3, 2, 1,
 }
 var yyPact = [...]int{
 
-	-2, -1000, -5, -1000, -3, -1000,
+	0, -1000, -5, -1000, -1, -2, -1000, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 4, 3,
+	0, 6, 5,
 }
 var yyR1 = [...]int{
 
-	0, 1, 2, 2,
+	0, 1, 2, 2, 2,
 }
 var yyR2 = [...]int{
 
-	0, 1, 1, 3,
+	0, 1, 1, 3, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -1, -2, 4, 5, 4,
+	-1000, -1, -2, 4, 5, 6, 4, 4,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 2, 0, 3,
+	0, -2, 1, 2, 0, 0, 3, 4,
 }
 var yyTok1 = [...]int{
 
@@ -75,7 +76,7 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 5,
+	3, 3, 3, 5, 3, 6,
 }
 var yyTok2 = [...]int{
 
@@ -442,6 +443,12 @@ yydefault:
 		//line parser.y:35
 		{
 			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: &ast.Int{X: yyDollar[3].num}}
+		}
+	case 4:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:39
+		{
+			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: &ast.Int{X: yyDollar[3].num}}
 		}
 	}
 	goto yystack /* stack new state and value */

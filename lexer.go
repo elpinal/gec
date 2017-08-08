@@ -32,7 +32,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			return eof
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			return x.num(c, yylval)
-		case '=', '+':
+		case '=', '+', '-':
 			return int(c)
 		case ' ':
 		default:

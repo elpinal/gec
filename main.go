@@ -63,6 +63,10 @@ func gen(builder llvm.Builder, expr ast.Expr) llvm.Value {
 		v1 := gen(builder, x.X)
 		v2 := gen(builder, x.Y)
 		return builder.CreateAdd(v1, v2, "add")
+	case *ast.Sub:
+		v1 := gen(builder, x.X)
+		v2 := gen(builder, x.Y)
+		return builder.CreateSub(v1, v2, "sub")
 	}
 	panic("unreachable")
 }
