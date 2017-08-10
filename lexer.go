@@ -122,11 +122,12 @@ func (x *exprLexer) next() rune {
 }
 
 func (x *exprLexer) Error(s string) {
-	x.err = fmt.Errorf("parse error (offset: %d, peek: %q): %s", x.off, x.next(), s)
+	x.err = fmt.Errorf("[offset: %d]: %s", x.off, s)
 }
 
 func parse(line []byte) (ast.Expr, error) {
 	l := exprLexer{line: line}
+	yyErrorVerbose = true
 	yyParse(&l)
 	if l.err != nil {
 		return nil, l.err
