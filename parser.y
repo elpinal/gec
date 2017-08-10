@@ -18,6 +18,7 @@ import "github.com/elpinal/gec/ast"
 %type <decl> decl
 %type <decls> decls
 
+%token ILLEGAL
 %token <num> NUM
 %token <ident> IDENT
 

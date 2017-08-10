@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"unicode/utf8"
 
@@ -43,6 +44,8 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			if isAlphabet(c) {
 				return x.ident(c, yylval)
 			}
+			fmt.Fprintf(os.Stderr, "[offset: %d]: invalid character: %[1]U %[1]q\n", x.off, c)
+			return ILLEGAL
 		}
 	}
 }
