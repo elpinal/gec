@@ -8,18 +8,25 @@ import "github.com/elpinal/gec/ast"
 
 //line parser.y:9
 type yySymType struct {
-	yys  int
-	expr ast.Expr
-	num  int
+	yys   int
+	decl  *ast.Assign
+	decls []*ast.Assign
+	expr  ast.Expr
+	num   int
+	ident string
 }
 
 const NUM = 57346
+const IDENT = 57347
 
 var yyToknames = [...]string{
 	"$end",
 	"error",
 	"$unk",
 	"NUM",
+	"IDENT",
+	"';'",
+	"'='",
 	"'+'",
 	"'-'",
 	"'*'",
@@ -31,7 +38,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:63
+//line parser.y:92
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -42,39 +49,45 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 13
+const yyLast = 22
 
 var yyAct = [...]int{
 
-	4, 8, 9, 5, 3, 6, 7, 2, 1, 12,
-	13, 10, 11,
+	2, 12, 13, 6, 9, 10, 5, 14, 11, 4,
+	8, 7, 17, 8, 3, 21, 19, 20, 18, 15,
+	16, 1,
 }
 var yyPact = [...]int{
 
-	-1, -1000, 0, -6, -1000, -1000, -1, -1, -1, -1,
-	-6, -6, -1000, -1000,
+	6, -1000, -4, 2, -9, -1000, -1000, 0, -1000, 9,
+	9, 6, 9, 9, 9, -9, -9, -4, -1000, -1000,
+	-1000, -4,
 }
 var yyPgo = [...]int{
 
-	0, 8, 7, 4, 0,
+	0, 21, 0, 9, 3, 6, 14,
 }
 var yyR1 = [...]int{
 
-	0, 1, 2, 2, 2, 3, 3, 3, 4,
+	0, 1, 1, 6, 6, 5, 2, 2, 2, 3,
+	3, 3, 4,
 }
 var yyR2 = [...]int{
 
-	0, 1, 1, 3, 3, 1, 3, 3, 1,
+	0, 1, 3, 3, 1, 3, 1, 3, 3, 1,
+	3, 3, 1,
 }
 var yyChk = [...]int{
 
-	-1000, -1, -2, -3, -4, 4, 5, 6, 7, 8,
-	-3, -3, -4, -4,
+	-1000, -1, -2, -6, -3, -5, -4, 5, 4, 8,
+	9, 6, 10, 11, 7, -3, -3, -2, -5, -4,
+	-4, -2,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 2, 5, 8, 0, 0, 0, 0,
-	3, 4, 6, 7,
+	0, -2, 1, 0, 6, 4, 9, 0, 12, 0,
+	0, 0, 0, 0, 0, 7, 8, 2, 3, 10,
+	11, 5,
 }
 var yyTok1 = [...]int{
 
@@ -82,11 +95,13 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 7, 5, 3, 6, 3, 8,
+	3, 3, 10, 8, 3, 9, 3, 11, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 6,
+	3, 7,
 }
 var yyTok2 = [...]int{
 
-	2, 3, 4,
+	2, 3, 4, 5,
 }
 var yyTok3 = [...]int{
 	0,
@@ -431,7 +446,7 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:22
+		//line parser.y:28
 		{
 			yyVAL.expr = yyDollar[1].expr
 			if l, ok := yylex.(*exprLexer); ok {
@@ -439,44 +454,71 @@ yydefault:
 			}
 		}
 	case 2:
-		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:31
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
-	case 3:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:35
 		{
-			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+			yyVAL.expr = &ast.WithDecls{Decls: yyDollar[1].decls, Expr: yyDollar[3].expr}
+			if l, ok := yylex.(*exprLexer); ok {
+				l.expr = yyVAL.expr
+			}
+		}
+	case 3:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:44
+		{
+			yyVAL.decls = append(yyDollar[1].decls, yyDollar[3].decl)
 		}
 	case 4:
-		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:39
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:48
 		{
-			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+			yyVAL.decls = []*ast.Assign{yyDollar[1].decl}
 		}
 	case 5:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:54
+		{
+			yyVAL.decl = &ast.Assign{LHS: yyDollar[1].ident, RHS: yyDollar[3].expr}
+		}
+	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:45
+		//line parser.y:60
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
-	case 6:
+	case 7:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:49
+		//line parser.y:64
+		{
+			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
+	case 8:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:68
+		{
+			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
+	case 9:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:74
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 10:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:78
 		{
 			yyVAL.expr = &ast.Mul{X: yyDollar[1].expr, Y: yyDollar[3].expr}
 		}
-	case 7:
+	case 11:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:53
+		//line parser.y:82
 		{
 			yyVAL.expr = &ast.Div{X: yyDollar[1].expr, Y: yyDollar[3].expr}
 		}
-	case 8:
+	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:59
+		//line parser.y:88
 		{
 			yyVAL.expr = &ast.Int{X: yyDollar[1].num}
 		}

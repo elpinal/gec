@@ -24,6 +24,10 @@ type exprLexer struct {
 	off int // information for error messages
 }
 
+func isAlphabet(c rune) bool {
+	return 'A' <= c && c <= 'Z' || 'a' <= c && c <= 'z'
+}
+
 func (x *exprLexer) Lex(yylval *yySymType) int {
 	for {
 		c := x.next()
@@ -32,10 +36,13 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			return eof
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			return x.num(c, yylval)
-		case '=', '+', '-', '*', '/':
+		case '=', '+', '-', '*', '/', ';':
 			return int(c)
 		case ' ':
 		default:
+			if isAlphabet(c) {
+				return x.ident(c, yylval)
+			}
 		}
 	}
 }
@@ -68,6 +75,31 @@ L:
 	}
 	yylval.num = n
 	return NUM
+}
+
+func (x *exprLexer) ident(c rune, yylval *yySymType) int {
+	add := func(b *bytes.Buffer, c rune) {
+		if _, err := b.WriteRune(c); err != nil {
+			x.err = fmt.Errorf("WriteRune: %s", err)
+		}
+	}
+	var b bytes.Buffer
+	add(&b, c)
+L:
+	for {
+		c = x.next()
+		switch {
+		case isAlphabet(c):
+			add(&b, c)
+		default:
+			break L
+		}
+	}
+	if c != eof {
+		x.peek = c
+	}
+	yylval.ident = b.String()
+	return IDENT
 }
 
 func (x *exprLexer) next() rune {

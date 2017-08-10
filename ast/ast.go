@@ -33,3 +33,17 @@ type Div struct {
 }
 
 func (x *Div) expr() {}
+
+type WithDecls struct {
+	Decls []*Assign
+	Expr  Expr
+}
+
+func (x *WithDecls) expr() {}
+
+type Assign struct {
+	LHS string
+	RHS Expr
+}
+
+func (x *Assign) expr() {}

@@ -7,13 +7,19 @@ import "github.com/elpinal/gec/ast"
 %}
 
 %union {
+        decl *ast.Assign
+        decls []*ast.Assign
         expr ast.Expr
         num int
+        ident string
 }
 
 %type <expr> top expr term factor
+%type <decl> decl
+%type <decls> decls
 
 %token <num> NUM
+%token <ident> IDENT
 
 %%
 
@@ -24,6 +30,29 @@ top:
                 if l, ok := yylex.(*exprLexer); ok {
                         l.expr = $$
                 }
+        }
+|	decls ';' expr
+        {
+                $$ = &ast.WithDecls{Decls: $1, Expr: $3}
+                if l, ok := yylex.(*exprLexer); ok {
+                        l.expr = $$
+                }
+        }
+
+decls:
+        decls ';' decl
+        {
+                $$ = append($1, $3)
+        }
+|       decl
+        {
+                $$ = []*ast.Assign{$1}
+        }
+
+decl:
+        IDENT '=' expr
+        {
+                $$ = &ast.Assign{LHS: $1, RHS: $3}
         }
 
 expr:

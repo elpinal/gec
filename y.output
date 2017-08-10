@@ -2,13 +2,16 @@
 state 0
 	$accept: .top $end 
 
-	NUM  shift 5
+	NUM  shift 8
+	IDENT  shift 7
 	.  error
 
 	top  goto 1
 	expr  goto 2
-	term  goto 3
-	factor  goto 4
+	term  goto 4
+	factor  goto 6
+	decl  goto 5
+	decls  goto 3
 
 state 1
 	$accept:  top.$end 
@@ -22,108 +25,178 @@ state 2
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 6
-	'-'  shift 7
-	.  reduce 1 (src line 20)
+	'+'  shift 9
+	'-'  shift 10
+	.  reduce 1 (src line 26)
 
 
 state 3
-	expr:  term.    (2)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	top:  decls.';' expr 
+	decls:  decls.';' decl 
 
-	'*'  shift 8
-	'/'  shift 9
-	.  reduce 2 (src line 29)
+	';'  shift 11
+	.  error
 
 
 state 4
-	term:  factor.    (5)
+	expr:  term.    (6)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
-	.  reduce 5 (src line 43)
+	'*'  shift 12
+	'/'  shift 13
+	.  reduce 6 (src line 58)
 
 
 state 5
-	factor:  NUM.    (8)
+	decls:  decl.    (4)
 
-	.  reduce 8 (src line 57)
+	.  reduce 4 (src line 47)
 
 
 state 6
-	expr:  expr '+'.term 
+	term:  factor.    (9)
 
-	NUM  shift 5
-	.  error
+	.  reduce 9 (src line 72)
 
-	term  goto 10
-	factor  goto 4
 
 state 7
-	expr:  expr '-'.term 
+	decl:  IDENT.'=' expr 
 
-	NUM  shift 5
+	'='  shift 14
 	.  error
 
-	term  goto 11
-	factor  goto 4
 
 state 8
-	term:  term '*'.factor 
+	factor:  NUM.    (12)
 
-	NUM  shift 5
-	.  error
+	.  reduce 12 (src line 86)
 
-	factor  goto 12
 
 state 9
-	term:  term '/'.factor 
+	expr:  expr '+'.term 
 
-	NUM  shift 5
+	NUM  shift 8
 	.  error
 
-	factor  goto 13
+	term  goto 15
+	factor  goto 6
 
 state 10
-	expr:  expr '+' term.    (3)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	expr:  expr '-'.term 
 
-	'*'  shift 8
-	'/'  shift 9
-	.  reduce 3 (src line 34)
+	NUM  shift 8
+	.  error
 
+	term  goto 16
+	factor  goto 6
 
 state 11
-	expr:  expr '-' term.    (4)
+	top:  decls ';'.expr 
+	decls:  decls ';'.decl 
+
+	NUM  shift 8
+	IDENT  shift 7
+	.  error
+
+	expr  goto 17
+	term  goto 4
+	factor  goto 6
+	decl  goto 18
+
+state 12
+	term:  term '*'.factor 
+
+	NUM  shift 8
+	.  error
+
+	factor  goto 19
+
+state 13
+	term:  term '/'.factor 
+
+	NUM  shift 8
+	.  error
+
+	factor  goto 20
+
+state 14
+	decl:  IDENT '='.expr 
+
+	NUM  shift 8
+	.  error
+
+	expr  goto 21
+	term  goto 4
+	factor  goto 6
+
+state 15
+	expr:  expr '+' term.    (7)
 	term:  term.'*' factor 
 	term:  term.'/' factor 
 
-	'*'  shift 8
-	'/'  shift 9
-	.  reduce 4 (src line 38)
+	'*'  shift 12
+	'/'  shift 13
+	.  reduce 7 (src line 63)
 
 
-state 12
-	term:  term '*' factor.    (6)
+state 16
+	expr:  expr '-' term.    (8)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
-	.  reduce 6 (src line 48)
-
-
-state 13
-	term:  term '/' factor.    (7)
-
-	.  reduce 7 (src line 52)
+	'*'  shift 12
+	'/'  shift 13
+	.  reduce 8 (src line 67)
 
 
-8 terminals, 5 nonterminals
-9 grammar rules, 14/8000 states
+state 17
+	top:  decls ';' expr.    (2)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
+
+	'+'  shift 9
+	'-'  shift 10
+	.  reduce 2 (src line 34)
+
+
+state 18
+	decls:  decls ';' decl.    (3)
+
+	.  reduce 3 (src line 42)
+
+
+state 19
+	term:  term '*' factor.    (10)
+
+	.  reduce 10 (src line 77)
+
+
+state 20
+	term:  term '/' factor.    (11)
+
+	.  reduce 11 (src line 81)
+
+
+state 21
+	decl:  IDENT '=' expr.    (5)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
+
+	'+'  shift 9
+	'-'  shift 10
+	.  reduce 5 (src line 52)
+
+
+11 terminals, 7 nonterminals
+13 grammar rules, 22/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-54 working sets used
-memory: parser 9/120000
-0 extra closures
-13 shift entries, 1 exceptions
-8 goto entries
-2 entries saved by goto default
-Optimizer space used: output 13/120000
-13 table entries, 0 zero
-maximum spread: 8, maximum offset: 9
+56 working sets used
+memory: parser 18/120000
+11 extra closures
+23 shift entries, 1 exceptions
+13 goto entries
+6 entries saved by goto default
+Optimizer space used: output 22/120000
+22 table entries, 0 zero
+maximum spread: 11, maximum offset: 14
