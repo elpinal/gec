@@ -44,6 +44,7 @@ func run(input []byte, logFile *string) {
 	expr, err := parse(input)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
+		os.Exit(1)
 	}
 	a := builder.gen(expr)
 
@@ -51,6 +52,7 @@ func run(input []byte, logFile *string) {
 
 	if err := llvm.VerifyModule(mod, llvm.ReturnStatusAction); err != nil {
 		fmt.Fprintln(os.Stdout, err)
+		os.Exit(1)
 	}
 	if logFile != nil {
 		ioutil.WriteFile(*logFile, []byte(mod.String()), 0666)
@@ -59,6 +61,7 @@ func run(input []byte, logFile *string) {
 	engine, err := llvm.NewExecutionEngine(mod)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
+		os.Exit(1)
 	}
 
 	funcResult := engine.RunFunction(mod.NamedFunction("main"), []llvm.GenericValue{})
