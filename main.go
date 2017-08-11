@@ -96,12 +96,24 @@ func (b *Builder) resolve(name string) llvm.Value {
 	return t
 }
 
+func (b *Builder) checkCR(name, referredFrom string) {
+	for _, r := range b.refers[name] {
+		if r == referredFrom {
+			panic(fmt.Sprintf("circular reference: %s", r))
+		}
+		b.checkCR(r, referredFrom)
+	}
+}
+
 func (b *Builder) gen(expr ast.Expr, referredFrom string) llvm.Value {
 	switch x := expr.(type) {
 	case *ast.Ident:
 		if x.Name == referredFrom {
 			panic(fmt.Sprintf("self-reference: %s", x.Name))
 		}
+		// Note that there is possibility of duplication.
+		b.refers[referredFrom] = append(b.refers[referredFrom], x.Name)
+		b.checkCR(x.Name, referredFrom)
 		t, found := b.env[x.Name]
 		if !found {
 			t = b.resolve(x.Name)
