@@ -22,8 +22,9 @@ func main() {
 
 type Builder struct {
 	llvm.Builder
-	env   map[string]llvm.Value
-	decls map[string]ast.Expr
+	env    map[string]llvm.Value
+	decls  map[string]ast.Expr
+	refers map[string][]string
 }
 
 func newBuilder(lb llvm.Builder) *Builder {
@@ -31,6 +32,7 @@ func newBuilder(lb llvm.Builder) *Builder {
 		Builder: lb,
 		env:     make(map[string]llvm.Value),
 		decls:   make(map[string]ast.Expr),
+		refers:  make(map[string][]string),
 	}
 }
 
@@ -49,7 +51,7 @@ func run(input []byte, logFile *string) {
 		os.Exit(1)
 	}
 	expr := builder.reserve(decls)
-	a := builder.gen(expr)
+	a := builder.gen(expr, "")
 
 	builder.CreateRet(a)
 
@@ -89,14 +91,17 @@ func (b *Builder) resolve(name string) llvm.Value {
 		panic(fmt.Sprintf("unknown name: %s", name))
 	}
 	t := b.CreateAlloca(llvm.Int32Type(), "assign")
-	b.CreateStore(b.gen(rhs), t)
+	b.CreateStore(b.gen(rhs, name), t)
 	b.env[name] = t
 	return t
 }
 
-func (b *Builder) gen(expr ast.Expr) llvm.Value {
+func (b *Builder) gen(expr ast.Expr, referredFrom string) llvm.Value {
 	switch x := expr.(type) {
 	case *ast.Ident:
+		if x.Name == referredFrom {
+			panic(fmt.Sprintf("self-reference: %s", x.Name))
+		}
 		t, found := b.env[x.Name]
 		if !found {
 			t = b.resolve(x.Name)
@@ -107,20 +112,20 @@ func (b *Builder) gen(expr ast.Expr) llvm.Value {
 		b.CreateStore(llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), a)
 		return b.CreateLoad(a, "a")
 	case *ast.Add:
-		v1 := b.gen(x.X)
-		v2 := b.gen(x.Y)
+		v1 := b.gen(x.X, referredFrom)
+		v2 := b.gen(x.Y, referredFrom)
 		return b.CreateAdd(v1, v2, "add")
 	case *ast.Sub:
-		v1 := b.gen(x.X)
-		v2 := b.gen(x.Y)
+		v1 := b.gen(x.X, referredFrom)
+		v2 := b.gen(x.Y, referredFrom)
 		return b.CreateSub(v1, v2, "sub")
 	case *ast.Mul:
-		v1 := b.gen(x.X)
-		v2 := b.gen(x.Y)
+		v1 := b.gen(x.X, referredFrom)
+		v2 := b.gen(x.Y, referredFrom)
 		return b.CreateMul(v1, v2, "sub")
 	case *ast.Div:
-		v1 := b.gen(x.X)
-		v2 := b.gen(x.Y)
+		v1 := b.gen(x.X, referredFrom)
+		v2 := b.gen(x.Y, referredFrom)
 		return b.CreateUDiv(v1, v2, "sub")
 	}
 	panic("unreachable")
