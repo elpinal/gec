@@ -7,6 +7,7 @@ import "github.com/elpinal/gec/ast"
 %}
 
 %union {
+        top *ast.WithDecls
         decl *ast.Assign
         decls []*ast.Assign
         expr ast.Expr
@@ -14,7 +15,8 @@ import "github.com/elpinal/gec/ast"
         ident string
 }
 
-%type <expr> top expr term factor
+%type <top> top
+%type <expr> expr term factor
 %type <decl> decl
 %type <decls> decls
 
@@ -27,7 +29,7 @@ import "github.com/elpinal/gec/ast"
 top:
         expr
         {
-                $$ = $1
+                $$ = &ast.WithDecls{Expr: $1}
                 if l, ok := yylex.(*exprLexer); ok {
                         l.expr = $$
                 }

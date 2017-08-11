@@ -22,13 +22,15 @@ func main() {
 
 type Builder struct {
 	llvm.Builder
-	env map[string]llvm.Value
+	env   map[string]llvm.Value
+	decls map[string]ast.Expr
 }
 
 func newBuilder(lb llvm.Builder) *Builder {
 	return &Builder{
 		Builder: lb,
 		env:     make(map[string]llvm.Value),
+		decls:   make(map[string]ast.Expr),
 	}
 }
 
@@ -41,11 +43,12 @@ func run(input []byte, logFile *string) {
 	block := llvm.AddBasicBlock(mod.NamedFunction("main"), "entry")
 	builder.SetInsertPoint(block, block.FirstInstruction())
 
-	expr, err := parse(input)
+	decls, err := parse(input)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
+	expr := builder.reserve(decls)
 	a := builder.gen(expr)
 
 	builder.CreateRet(a)
@@ -68,26 +71,35 @@ func run(input []byte, logFile *string) {
 	fmt.Println(funcResult.Int(false))
 }
 
+func (b *Builder) reserve(wd *ast.WithDecls) ast.Expr {
+	for _, decl := range wd.Decls {
+		if _, found := b.decls[decl.LHS]; found {
+			//TODO: Show previously declared position.
+			fmt.Fprintln(os.Stdout, "redeclared:", decl.LHS)
+			continue
+		}
+		b.decls[decl.LHS] = decl.RHS
+	}
+	return wd.Expr
+}
+
+func (b *Builder) resolve(name string) llvm.Value {
+	rhs, found := b.decls[name]
+	if !found {
+		panic(fmt.Sprintf("unknown name: %s", name))
+	}
+	t := b.CreateAlloca(llvm.Int32Type(), "assign")
+	b.CreateStore(b.gen(rhs), t)
+	b.env[name] = t
+	return t
+}
+
 func (b *Builder) gen(expr ast.Expr) llvm.Value {
 	switch x := expr.(type) {
-	case *ast.WithDecls:
-		for _, decl := range x.Decls {
-			_ = b.gen(decl)
-		}
-		return b.gen(x.Expr)
-	case *ast.Assign:
-		t := b.CreateAlloca(llvm.Int32Type(), "assign")
-		b.CreateStore(b.gen(x.RHS), t)
-		if _, found := b.env[x.LHS]; found {
-			//TODO: Show previously declared position.
-			fmt.Fprintln(os.Stdout, "redeclared:", x.LHS)
-		}
-		b.env[x.LHS] = t
-		return llvm.Value{}
 	case *ast.Ident:
 		t, found := b.env[x.Name]
 		if !found {
-			panic(fmt.Sprintf("unknown name: %s", x.Name))
+			t = b.resolve(x.Name)
 		}
 		return b.CreateLoad(t, "t")
 	case *ast.Int:
