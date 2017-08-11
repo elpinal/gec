@@ -47,3 +47,9 @@ type Assign struct {
 }
 
 func (x *Assign) expr() {}
+
+type Ident struct {
+	Name string
+}
+
+func (x *Ident) expr() {}

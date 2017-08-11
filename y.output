@@ -62,9 +62,10 @@ state 6
 
 state 7
 	decl:  IDENT.'=' expr 
+	factor:  IDENT.    (13)
 
 	'='  shift 14
-	.  error
+	.  reduce 13 (src line 92)
 
 
 state 8
@@ -77,6 +78,7 @@ state 9
 	expr:  expr '+'.term 
 
 	NUM  shift 8
+	IDENT  shift 16
 	.  error
 
 	term  goto 15
@@ -86,9 +88,10 @@ state 10
 	expr:  expr '-'.term 
 
 	NUM  shift 8
+	IDENT  shift 16
 	.  error
 
-	term  goto 16
+	term  goto 17
 	factor  goto 6
 
 state 11
@@ -99,34 +102,37 @@ state 11
 	IDENT  shift 7
 	.  error
 
-	expr  goto 17
+	expr  goto 18
 	term  goto 4
 	factor  goto 6
-	decl  goto 18
+	decl  goto 19
 
 state 12
 	term:  term '*'.factor 
 
 	NUM  shift 8
+	IDENT  shift 16
 	.  error
 
-	factor  goto 19
+	factor  goto 20
 
 state 13
 	term:  term '/'.factor 
 
 	NUM  shift 8
+	IDENT  shift 16
 	.  error
 
-	factor  goto 20
+	factor  goto 21
 
 state 14
 	decl:  IDENT '='.expr 
 
 	NUM  shift 8
+	IDENT  shift 16
 	.  error
 
-	expr  goto 21
+	expr  goto 22
 	term  goto 4
 	factor  goto 6
 
@@ -141,6 +147,12 @@ state 15
 
 
 state 16
+	factor:  IDENT.    (13)
+
+	.  reduce 13 (src line 92)
+
+
+state 17
 	expr:  expr '-' term.    (8)
 	term:  term.'*' factor 
 	term:  term.'/' factor 
@@ -150,7 +162,7 @@ state 16
 	.  reduce 8 (src line 68)
 
 
-state 17
+state 18
 	top:  decls ';' expr.    (2)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
@@ -160,25 +172,25 @@ state 17
 	.  reduce 2 (src line 35)
 
 
-state 18
+state 19
 	decls:  decls ';' decl.    (3)
 
 	.  reduce 3 (src line 43)
 
 
-state 19
+state 20
 	term:  term '*' factor.    (10)
 
 	.  reduce 10 (src line 78)
 
 
-state 20
+state 21
 	term:  term '/' factor.    (11)
 
 	.  reduce 11 (src line 82)
 
 
-state 21
+state 22
 	decl:  IDENT '=' expr.    (5)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
@@ -189,14 +201,14 @@ state 21
 
 
 12 terminals, 7 nonterminals
-13 grammar rules, 22/8000 states
+14 grammar rules, 23/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
 56 working sets used
 memory: parser 18/120000
 11 extra closures
-23 shift entries, 1 exceptions
+28 shift entries, 1 exceptions
 13 goto entries
 6 entries saved by goto default
-Optimizer space used: output 22/120000
-22 table entries, 0 zero
+Optimizer space used: output 23/120000
+23 table entries, 0 zero
 maximum spread: 12, maximum offset: 14

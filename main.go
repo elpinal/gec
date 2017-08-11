@@ -84,6 +84,12 @@ func (b *Builder) gen(expr ast.Expr) llvm.Value {
 		}
 		b.env[x.LHS] = t
 		return llvm.Value{}
+	case *ast.Ident:
+		t, found := b.env[x.Name]
+		if !found {
+			panic(fmt.Sprintf("unknown name: %s", x.Name))
+		}
+		return b.CreateLoad(t, "t")
 	case *ast.Int:
 		a := b.CreateAlloca(llvm.Int32Type(), "a")
 		b.CreateStore(llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), a)

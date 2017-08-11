@@ -89,5 +89,9 @@ factor:
         {
                 $$ = &ast.Int{X: $1}
         }
+|	IDENT
+        {
+                $$ = &ast.Ident{Name: $1}
+        }
 
 %%
