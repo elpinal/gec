@@ -149,13 +149,17 @@ func (b *Builder) genDecl(decl ast.Decl) (llvm.Value, error) {
 	panic("unreachable")
 }
 
-func (b *Builder) checkCR(name, referredFrom string) {
+func (b *Builder) checkCR(name, referredFrom string) error {
 	for _, r := range b.refers[name] {
 		if r == referredFrom {
-			panic(fmt.Sprintf("circular reference: %s", r))
+			return fmt.Errorf("circular reference: %s", r)
 		}
-		b.checkCR(r, referredFrom)
+		err := b.checkCR(r, referredFrom)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
@@ -166,14 +170,16 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		}
 		// Note that there is possibility of duplication.
 		b.refers[referredFrom] = append(b.refers[referredFrom], x.Name)
-		b.checkCR(x.Name, referredFrom)
+		err := b.checkCR(x.Name, referredFrom)
+		if err != nil {
+			return llvm.Value{}, err
+		}
 		t, found := b.env[x.Name]
 		if !found {
-			t1, err := b.resolve(x.Name)
+			t, err = b.resolve(x.Name)
 			if err != nil {
 				return llvm.Value{}, err
 			}
-			t = t1
 		}
 		return t, nil
 	case *ast.App:
