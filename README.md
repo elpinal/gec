@@ -5,7 +5,7 @@
 To install, use `go get`:
 
 ```bash
-$ go get github.com/elpinal/gec
+$ go get -u github.com/elpinal/gec
 ```
 
 -u flag stands for "update".
