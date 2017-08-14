@@ -200,9 +200,7 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		}
 		return b.CreateCall(t, args, "call"), nil
 	case *ast.Int:
-		a := b.CreateAlloca(llvm.Int32Type(), "a")
-		b.CreateStore(llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), a)
-		return b.CreateLoad(a, "a"), nil
+		return llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), nil
 	case *ast.Add:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
