@@ -41,11 +41,36 @@ type Ident struct {
 func (x *Ident) expr() {}
 
 type WithDecls struct {
-	Decls []*Assign
+	Decls []Decl
 	Expr  Expr
+}
+
+type Decl interface {
+	LName() string
 }
 
 type Assign struct {
 	LHS string
 	RHS Expr
 }
+
+func (x *Assign) LName() string {
+	return x.LHS
+}
+
+type DeclFunc struct {
+	Name string
+	Args []string
+	RHS  Expr
+}
+
+func (x *DeclFunc) LName() string {
+	return x.Name
+}
+
+type App struct {
+	FnName string
+	Args   []Expr
+}
+
+func (x *App) expr() {}

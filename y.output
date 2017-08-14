@@ -2,7 +2,7 @@
 state 0
 	$accept: .top $end 
 
-	NUM  shift 8
+	NUM  shift 9
 	IDENT  shift 7
 	.  error
 
@@ -10,6 +10,7 @@ state 0
 	expr  goto 2
 	term  goto 4
 	factor  goto 6
+	atom  goto 8
 	decl  goto 5
 	decls  goto 3
 
@@ -25,190 +26,289 @@ state 2
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 9
-	'-'  shift 10
-	.  reduce 1 (src line 29)
+	'+'  shift 10
+	'-'  shift 11
+	.  reduce 1 (src line 33)
 
 
 state 3
 	top:  decls.';' expr 
 	decls:  decls.';' decl 
 
-	';'  shift 11
+	';'  shift 12
 	.  error
 
 
 state 4
-	expr:  term.    (6)
+	expr:  term.    (9)
 	term:  term.'*' factor 
 	term:  term.'/' factor 
 
-	'*'  shift 12
-	'/'  shift 13
-	.  reduce 6 (src line 61)
+	'*'  shift 13
+	'/'  shift 14
+	.  reduce 9 (src line 79)
 
 
 state 5
 	decls:  decl.    (4)
 
-	.  reduce 4 (src line 50)
+	.  reduce 4 (src line 54)
 
 
 state 6
-	term:  factor.    (9)
+	term:  factor.    (12)
 
-	.  reduce 9 (src line 75)
+	.  reduce 12 (src line 93)
 
 
 state 7
 	decl:  IDENT.'=' expr 
-	factor:  IDENT.    (13)
+	decl:  IDENT.args '=' expr 
+	factor:  IDENT.atoms 
+	atom:  IDENT.    (20)
 
-	'='  shift 14
-	.  reduce 13 (src line 94)
+	NUM  shift 9
+	IDENT  shift 18
+	'='  shift 15
+	.  reduce 20 (src line 132)
 
+	atom  goto 19
+	atoms  goto 17
+	args  goto 16
 
 state 8
-	factor:  NUM.    (12)
+	factor:  atom.    (15)
 
-	.  reduce 12 (src line 89)
+	.  reduce 15 (src line 107)
 
 
 state 9
-	expr:  expr '+'.term 
+	atom:  NUM.    (19)
 
-	NUM  shift 8
-	IDENT  shift 16
-	.  error
+	.  reduce 19 (src line 127)
 
-	term  goto 15
-	factor  goto 6
 
 state 10
-	expr:  expr '-'.term 
+	expr:  expr '+'.term 
 
-	NUM  shift 8
-	IDENT  shift 16
+	NUM  shift 9
+	IDENT  shift 21
 	.  error
 
-	term  goto 17
+	term  goto 20
 	factor  goto 6
+	atom  goto 8
 
 state 11
+	expr:  expr '-'.term 
+
+	NUM  shift 9
+	IDENT  shift 21
+	.  error
+
+	term  goto 22
+	factor  goto 6
+	atom  goto 8
+
+state 12
 	top:  decls ';'.expr 
 	decls:  decls ';'.decl 
 
-	NUM  shift 8
+	NUM  shift 9
 	IDENT  shift 7
 	.  error
 
-	expr  goto 18
+	expr  goto 23
 	term  goto 4
 	factor  goto 6
-	decl  goto 19
-
-state 12
-	term:  term '*'.factor 
-
-	NUM  shift 8
-	IDENT  shift 16
-	.  error
-
-	factor  goto 20
+	atom  goto 8
+	decl  goto 24
 
 state 13
-	term:  term '/'.factor 
+	term:  term '*'.factor 
 
-	NUM  shift 8
-	IDENT  shift 16
+	NUM  shift 9
+	IDENT  shift 21
 	.  error
 
-	factor  goto 21
+	factor  goto 25
+	atom  goto 8
 
 state 14
-	decl:  IDENT '='.expr 
+	term:  term '/'.factor 
 
-	NUM  shift 8
-	IDENT  shift 16
+	NUM  shift 9
+	IDENT  shift 21
 	.  error
 
-	expr  goto 22
-	term  goto 4
-	factor  goto 6
+	factor  goto 26
+	atom  goto 8
 
 state 15
-	expr:  expr '+' term.    (7)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	decl:  IDENT '='.expr 
 
-	'*'  shift 12
-	'/'  shift 13
-	.  reduce 7 (src line 66)
+	NUM  shift 9
+	IDENT  shift 21
+	.  error
 
+	expr  goto 27
+	term  goto 4
+	factor  goto 6
+	atom  goto 8
 
 state 16
-	factor:  IDENT.    (13)
+	decl:  IDENT args.'=' expr 
+	args:  args.IDENT 
 
-	.  reduce 13 (src line 94)
+	IDENT  shift 29
+	'='  shift 28
+	.  error
 
 
 state 17
-	expr:  expr '-' term.    (8)
+	factor:  IDENT atoms.    (16)
+	atoms:  atoms.atom 
+
+	NUM  shift 9
+	IDENT  shift 31
+	.  reduce 16 (src line 112)
+
+	atom  goto 30
+
+ 18: reduce/reduce conflict  (red'ns 7 and 20) on IDENT
+state 18
+	args:  IDENT.    (7)
+	atom:  IDENT.    (20)
+
+	IDENT  reduce 7 (src line 69)
+	'='  reduce 7 (src line 69)
+	.  reduce 20 (src line 132)
+
+
+state 19
+	atoms:  atom.    (18)
+
+	.  reduce 18 (src line 122)
+
+
+state 20
+	expr:  expr '+' term.    (10)
 	term:  term.'*' factor 
 	term:  term.'/' factor 
 
-	'*'  shift 12
-	'/'  shift 13
-	.  reduce 8 (src line 70)
+	'*'  shift 13
+	'/'  shift 14
+	.  reduce 10 (src line 84)
 
 
-state 18
+state 21
+	factor:  IDENT.atoms 
+	atom:  IDENT.    (20)
+
+	NUM  shift 9
+	IDENT  shift 31
+	.  reduce 20 (src line 132)
+
+	atom  goto 19
+	atoms  goto 17
+
+state 22
+	expr:  expr '-' term.    (11)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
+
+	'*'  shift 13
+	'/'  shift 14
+	.  reduce 11 (src line 88)
+
+
+state 23
 	top:  decls ';' expr.    (2)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 9
-	'-'  shift 10
-	.  reduce 2 (src line 37)
+	'+'  shift 10
+	'-'  shift 11
+	.  reduce 2 (src line 41)
 
 
-state 19
+state 24
 	decls:  decls ';' decl.    (3)
 
-	.  reduce 3 (src line 45)
+	.  reduce 3 (src line 49)
 
 
-state 20
-	term:  term '*' factor.    (10)
+state 25
+	term:  term '*' factor.    (13)
 
-	.  reduce 10 (src line 80)
-
-
-state 21
-	term:  term '/' factor.    (11)
-
-	.  reduce 11 (src line 84)
+	.  reduce 13 (src line 98)
 
 
-state 22
+state 26
+	term:  term '/' factor.    (14)
+
+	.  reduce 14 (src line 102)
+
+
+state 27
 	decl:  IDENT '=' expr.    (5)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 9
-	'-'  shift 10
-	.  reduce 5 (src line 55)
+	'+'  shift 10
+	'-'  shift 11
+	.  reduce 5 (src line 59)
 
 
-12 terminals, 7 nonterminals
-14 grammar rules, 23/8000 states
-0 shift/reduce, 0 reduce/reduce conflicts reported
-56 working sets used
-memory: parser 18/120000
-11 extra closures
-28 shift entries, 1 exceptions
-13 goto entries
-6 entries saved by goto default
-Optimizer space used: output 23/120000
-23 table entries, 0 zero
-maximum spread: 12, maximum offset: 14
+state 28
+	decl:  IDENT args '='.expr 
+
+	NUM  shift 9
+	IDENT  shift 21
+	.  error
+
+	expr  goto 32
+	term  goto 4
+	factor  goto 6
+	atom  goto 8
+
+state 29
+	args:  args IDENT.    (8)
+
+	.  reduce 8 (src line 74)
+
+
+state 30
+	atoms:  atoms atom.    (17)
+
+	.  reduce 17 (src line 117)
+
+
+state 31
+	atom:  IDENT.    (20)
+
+	.  reduce 20 (src line 132)
+
+
+state 32
+	decl:  IDENT args '=' expr.    (6)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
+
+	'+'  shift 10
+	'-'  shift 11
+	.  reduce 6 (src line 64)
+
+
+12 terminals, 10 nonterminals
+21 grammar rules, 33/8000 states
+0 shift/reduce, 1 reduce/reduce conflicts reported
+59 working sets used
+memory: parser 34/120000
+15 extra closures
+40 shift entries, 3 exceptions
+20 goto entries
+16 entries saved by goto default
+Optimizer space used: output 36/120000
+36 table entries, 0 zero
+maximum spread: 12, maximum offset: 28

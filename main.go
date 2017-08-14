@@ -22,16 +22,18 @@ func main() {
 
 type Builder struct {
 	llvm.Builder
+	module llvm.Module
 	env    map[string]llvm.Value
-	decls  map[string]ast.Expr
+	decls  map[string]ast.Decl
 	refers map[string][]string
+	entry  llvm.BasicBlock
 }
 
 func newBuilder(lb llvm.Builder) *Builder {
 	return &Builder{
 		Builder: lb,
 		env:     make(map[string]llvm.Value),
-		decls:   make(map[string]ast.Expr),
+		decls:   make(map[string]ast.Decl),
 		refers:  make(map[string][]string),
 	}
 }
@@ -39,10 +41,12 @@ func newBuilder(lb llvm.Builder) *Builder {
 func run(input []byte, logFile *string) {
 	builder := newBuilder(llvm.NewBuilder())
 	mod := llvm.NewModule("gec")
+	builder.module = mod
 
 	main := llvm.FunctionType(llvm.Int32Type(), []llvm.Type{}, false)
-	llvm.AddFunction(mod, "main", main)
-	block := llvm.AddBasicBlock(mod.NamedFunction("main"), "entry")
+	llvm.AddFunction(builder.module, "main", main)
+	block := llvm.AddBasicBlock(builder.module.NamedFunction("main"), "entry")
+	builder.entry = block
 	builder.SetInsertPoint(block, block.FirstInstruction())
 
 	decls, err := parse(input)
@@ -55,45 +59,79 @@ func run(input []byte, logFile *string) {
 
 	builder.CreateRet(a)
 
-	if err := llvm.VerifyModule(mod, llvm.ReturnStatusAction); err != nil {
+	if err := llvm.VerifyModule(builder.module, llvm.ReturnStatusAction); err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 	if logFile != nil {
-		ioutil.WriteFile(*logFile, []byte(mod.String()), 0666)
+		ioutil.WriteFile(*logFile, []byte(builder.module.String()), 0666)
 	}
 
-	engine, err := llvm.NewExecutionEngine(mod)
+	engine, err := llvm.NewExecutionEngine(builder.module)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 
-	funcResult := engine.RunFunction(mod.NamedFunction("main"), []llvm.GenericValue{})
+	funcResult := engine.RunFunction(builder.module.NamedFunction("main"), []llvm.GenericValue{})
 	fmt.Println(funcResult.Int(false))
 }
 
 func (b *Builder) reserve(wd *ast.WithDecls) ast.Expr {
 	for _, decl := range wd.Decls {
-		if _, found := b.decls[decl.LHS]; found {
+		if _, found := b.decls[decl.LName()]; found {
 			//TODO: Show previously declared position.
-			fmt.Fprintln(os.Stdout, "redeclared:", decl.LHS)
+			fmt.Fprintln(os.Stdout, "redeclared:", decl.LName())
 			continue
 		}
-		b.decls[decl.LHS] = decl.RHS
+		b.decls[decl.LName()] = decl
 	}
 	return wd.Expr
 }
 
 func (b *Builder) resolve(name string) llvm.Value {
-	rhs, found := b.decls[name]
+	decl, found := b.decls[name]
 	if !found {
 		panic(fmt.Sprintf("unknown name: %s", name))
 	}
-	t := b.CreateAlloca(llvm.Int32Type(), "assign")
-	b.CreateStore(b.gen(rhs, name), t)
+	t := b.genDecl(decl)
 	b.env[name] = t
 	return t
+}
+
+func (b *Builder) genDecl(decl ast.Decl) llvm.Value {
+	switch x := decl.(type) {
+	case *ast.Assign:
+		v := b.gen(x.RHS, x.LHS)
+		return v
+	case *ast.DeclFunc:
+		params := make([]llvm.Type, len(x.Args))
+		for i := range x.Args {
+			params[i] = llvm.Int32Type()
+		}
+		f := llvm.FunctionType(llvm.Int32Type(), params, false)
+		v := llvm.AddFunction(b.module, x.Name, f)
+		for i, name := range x.Args {
+			v.Param(i).SetName(name)
+		}
+		block := llvm.AddBasicBlock(v, "entry")
+		b.SetInsertPointAtEnd(block)
+
+		topEnv := make(map[string]llvm.Value, len(b.env))
+		for k, v := range b.env {
+			topEnv[k] = v
+		}
+		for i, name := range x.Args {
+			b.env[name] = v.Param(i)
+		}
+		ret := b.gen(x.RHS, x.Name)
+		b.CreateRet(ret)
+		b.env = topEnv
+
+		b.SetInsertPointAtEnd(b.entry)
+		return v
+	}
+	panic("unreachable")
 }
 
 func (b *Builder) checkCR(name, referredFrom string) {
@@ -118,7 +156,17 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) llvm.Value {
 		if !found {
 			t = b.resolve(x.Name)
 		}
-		return b.CreateLoad(t, "t")
+		return t
+	case *ast.App:
+		t, found := b.env[x.FnName]
+		if !found {
+			t = b.resolve(x.FnName)
+		}
+		args := make([]llvm.Value, len(x.Args))
+		for i, arg := range x.Args {
+			args[i] = b.gen(arg, referredFrom)
+		}
+		return b.CreateCall(t, args, "call")
 	case *ast.Int:
 		a := b.CreateAlloca(llvm.Int32Type(), "a")
 		b.CreateStore(llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), a)

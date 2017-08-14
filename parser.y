@@ -8,17 +8,21 @@ import "github.com/elpinal/gec/ast"
 
 %union {
         top *ast.WithDecls
-        decl *ast.Assign
-        decls []*ast.Assign
+        decl ast.Decl
+        decls []ast.Decl
         expr ast.Expr
+        exprs []ast.Expr
         num int
         ident string
+        args []string
 }
 
 %type <top> top
-%type <expr> expr term factor
+%type <expr> expr term factor atom
+%type <exprs> atoms
 %type <decl> decl
 %type <decls> decls
+%type <args> args
 
 %token ILLEGAL
 %token <num> NUM
@@ -49,13 +53,27 @@ decls:
         }
 |       decl
         {
-                $$ = []*ast.Assign{$1}
+                $$ = []ast.Decl{$1}
         }
 
 decl:
         IDENT '=' expr
         {
                 $$ = &ast.Assign{LHS: $1, RHS: $3}
+        }
+|	IDENT args '=' expr
+        {
+                $$ = &ast.DeclFunc{Name: $1, Args: $2, RHS: $4}
+        }
+
+args:
+        IDENT
+        {
+                $$ = []string{$1}
+        }
+|	args IDENT
+        {
+                $$ = append($1, $2)
         }
 
 expr:
@@ -87,6 +105,26 @@ term:
         }
 
 factor:
+        atom
+        {
+                $$ = $1
+        }
+|	IDENT atoms
+        {
+                $$ = &ast.App{FnName: $1, Args: $2}
+        }
+
+atoms:
+        atoms atom
+        {
+                $$ = append($1, $2)
+        }
+|	atom
+        {
+                $$ = []ast.Expr{$1}
+        }
+
+atom:
         NUM
         {
                 $$ = &ast.Int{X: $1}
