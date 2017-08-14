@@ -182,11 +182,11 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) llvm.Value {
 	case *ast.Mul:
 		v1 := b.gen(x.X, referredFrom)
 		v2 := b.gen(x.Y, referredFrom)
-		return b.CreateMul(v1, v2, "sub")
+		return b.CreateMul(v1, v2, "mul")
 	case *ast.Div:
 		v1 := b.gen(x.X, referredFrom)
 		v2 := b.gen(x.Y, referredFrom)
-		return b.CreateUDiv(v1, v2, "sub")
+		return b.CreateUDiv(v1, v2, "div")
 	}
 	panic("unreachable")
 }
