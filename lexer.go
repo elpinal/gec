@@ -52,7 +52,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 				return x.num(c, yylval)
 			}
 			fmt.Fprintf(os.Stderr, "[offset: %d]: invalid character: %[1]U %[1]q\n", x.off, c)
-			return int(ILLEGAL)
+			return ILLEGAL
 		}
 	}
 }
