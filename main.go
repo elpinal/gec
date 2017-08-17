@@ -19,7 +19,12 @@ func main() {
 	if flag.NArg() < 1 {
 		return
 	}
-	err := run([]byte(flag.Arg(0)), logFile)
+	b, err := ioutil.ReadFile(flag.Arg(0))
+	if err != nil {
+		fmt.Fprintln(os.Stdout, err)
+		os.Exit(1)
+	}
+	err = run(b, logFile)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
