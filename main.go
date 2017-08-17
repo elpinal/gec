@@ -17,7 +17,8 @@ func main() {
 	logFile := flag.String("log", "", "specify `filename` to output LLVM IR")
 	flag.Parse()
 	if flag.NArg() < 1 {
-		return
+		fmt.Fprintln(os.Stdout, "gec: no Elacht source file given")
+		os.Exit(1)
 	}
 	b, err := ioutil.ReadFile(flag.Arg(0))
 	if err != nil {
