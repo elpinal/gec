@@ -16,13 +16,15 @@ import (
 const eof = 0
 
 type exprLexer struct {
-	src []byte
-	ch  rune
+	src []byte // source
+	ch  rune   // current character
 	err error
 
+	// result
 	expr *ast.WithDecls
 
-	off    uint // information for error messages
+	// information for error messages
+	off    uint
 	line   uint
 	column uint
 }
