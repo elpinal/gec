@@ -51,6 +51,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 		case eof:
 			return eof
 		case '=', '+', '-', '*', '/', ';':
+			// FIXME: Possibility of a wrong position.
 			x.next()
 			return int(c)
 		case ' ', '\n':
