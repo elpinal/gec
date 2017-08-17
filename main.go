@@ -99,7 +99,7 @@ func (b *Builder) reserve(wd *ast.WithDecls) (ast.Expr, error) {
 func (b *Builder) resolve(tok token.Token) (llvm.Value, error) {
 	decl, found := b.decls[tok.Lit]
 	if !found {
-		return llvm.Value{}, fmt.Errorf("%d:%d: unknown name: %q", tok.Line, tok.Column, tok.Lit)
+		return llvm.Value{}, fmt.Errorf("%v: unknown name: %q", tok.Position, tok.Lit)
 	}
 	t, err := b.genDecl(decl)
 	if err != nil {

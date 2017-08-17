@@ -1,10 +1,6 @@
 package ast
 
-import (
-	"fmt"
-
-	"github.com/elpinal/gec/token"
-)
+import "github.com/elpinal/gec/token"
 
 type Expr interface {
 	expr()
@@ -51,25 +47,9 @@ type WithDecls struct {
 	Expr  Expr
 }
 
-type Position struct {
-	Line   uint
-	Column uint
-}
-
-func newPosition(line, column uint) Position {
-	return Position{
-		Line:   line,
-		Column: column,
-	}
-}
-
-func (p Position) String() string {
-	return fmt.Sprintf("%d:%d", p.Line, p.Column)
-}
-
 type Decl interface {
 	LName() string
-	Pos() Position
+	Pos() token.Position
 }
 
 type Assign struct {
@@ -81,8 +61,8 @@ func (x *Assign) LName() string {
 	return x.LHS.Lit
 }
 
-func (x *Assign) Pos() Position {
-	return newPosition(x.LHS.Line, x.LHS.Column)
+func (x *Assign) Pos() token.Position {
+	return token.NewPosition(x.LHS.Line, x.LHS.Column)
 }
 
 type DeclFunc struct {
@@ -95,8 +75,8 @@ func (x *DeclFunc) LName() string {
 	return x.Name.Lit
 }
 
-func (x *DeclFunc) Pos() Position {
-	return newPosition(x.Name.Line, x.Name.Column)
+func (x *DeclFunc) Pos() token.Position {
+	return token.NewPosition(x.Name.Line, x.Name.Column)
 }
 
 type App struct {

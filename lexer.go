@@ -91,10 +91,9 @@ func (x *exprLexer) takeWhile(kind int, f func(rune) bool, yylval *yySymType) in
 		x.next()
 	}
 	yylval.token = token.Token{
-		Lit:    b.String(),
-		Kind:   kind,
-		Line:   line,
-		Column: column,
+		Lit:      b.String(),
+		Kind:     kind,
+		Position: token.NewPosition(line, column),
 	}
 	return kind
 }
