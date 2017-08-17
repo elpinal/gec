@@ -7,22 +7,24 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"unicode/utf8"
 
 	"github.com/elpinal/gec/ast"
+	"github.com/elpinal/gec/token"
 )
 
 const eof = 0
 
 type exprLexer struct {
-	line []byte
+	src  []byte
 	peek rune
 	err  error
 
 	expr *ast.WithDecls
 
-	off int // information for error messages
+	off    int // information for error messages
+	line   uint
+	column uint
 }
 
 func isAlphabet(c rune) bool {
@@ -45,7 +47,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 				return x.ident(c, yylval)
 			}
 			fmt.Fprintf(os.Stderr, "[offset: %d]: invalid character: %[1]U %[1]q\n", x.off, c)
-			return ILLEGAL
+			return int(ILLEGAL)
 		}
 	}
 }
@@ -58,6 +60,8 @@ func (x *exprLexer) num(c rune, yylval *yySymType) int {
 	}
 	var b bytes.Buffer
 	add(&b, c)
+	line := x.line
+	column := x.column
 L:
 	for {
 		c = x.next()
@@ -71,12 +75,12 @@ L:
 	if c != eof {
 		x.peek = c
 	}
-	n, err := strconv.Atoi(b.String())
-	if err != nil {
-		x.err = err
-		return eof
+	yylval.token = token.Token{
+		Lit:    b.String(),
+		Kind:   NUM,
+		Line:   line,
+		Column: column,
 	}
-	yylval.num = n
 	return NUM
 }
 
@@ -88,6 +92,8 @@ func (x *exprLexer) ident(c rune, yylval *yySymType) int {
 	}
 	var b bytes.Buffer
 	add(&b, c)
+	line := x.line
+	column := x.column
 L:
 	for {
 		c = x.next()
@@ -101,7 +107,12 @@ L:
 	if c != eof {
 		x.peek = c
 	}
-	yylval.ident = b.String()
+	yylval.token = token.Token{
+		Lit:    b.String(),
+		Kind:   IDENT,
+		Line:   line,
+		Column: column,
+	}
 	return IDENT
 }
 
@@ -111,12 +122,18 @@ func (x *exprLexer) next() rune {
 		x.peek = eof
 		return r
 	}
-	if len(x.line) == 0 {
+	if len(x.src) == 0 {
 		return eof
 	}
-	c, size := utf8.DecodeRune(x.line)
-	x.line = x.line[size:]
+	c, size := utf8.DecodeRune(x.src)
+	x.src = x.src[size:]
 	x.off++
+	if c == '\n' {
+		x.line++
+		x.column = 0
+	} else {
+		x.column++
+	}
 	if c == utf8.RuneError && size == 1 {
 		x.err = errors.New("next: invalid utf8")
 		return x.next()
@@ -128,8 +145,8 @@ func (x *exprLexer) Error(s string) {
 	x.err = fmt.Errorf("[offset: %d]: %s", x.off, s)
 }
 
-func parse(line []byte) (*ast.WithDecls, error) {
-	l := exprLexer{line: line}
+func parse(src []byte) (*ast.WithDecls, error) {
+	l := exprLexer{src: src}
 	yyErrorVerbose = true
 	yyParse(&l)
 	if l.err != nil {

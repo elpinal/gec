@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/elpinal/gec/ast"
 
@@ -111,7 +112,7 @@ func (b *Builder) resolve(name string) (llvm.Value, error) {
 func (b *Builder) genDecl(decl ast.Decl) (llvm.Value, error) {
 	switch x := decl.(type) {
 	case *ast.Assign:
-		v, err := b.gen(x.RHS, x.LHS)
+		v, err := b.gen(x.RHS, x.LHS.Lit)
 		if err != nil {
 			return llvm.Value{}, err
 		}
@@ -122,9 +123,9 @@ func (b *Builder) genDecl(decl ast.Decl) (llvm.Value, error) {
 			params[i] = llvm.Int32Type()
 		}
 		f := llvm.FunctionType(llvm.Int32Type(), params, false)
-		v := llvm.AddFunction(b.module, x.Name, f)
+		v := llvm.AddFunction(b.module, x.Name.Lit, f)
 		for i, name := range x.Args {
-			v.Param(i).SetName(name)
+			v.Param(i).SetName(name.Lit)
 		}
 		block := llvm.AddBasicBlock(v, "entry")
 		b.SetInsertPointAtEnd(block)
@@ -134,9 +135,9 @@ func (b *Builder) genDecl(decl ast.Decl) (llvm.Value, error) {
 			topEnv[k] = v
 		}
 		for i, name := range x.Args {
-			b.env[name] = v.Param(i)
+			b.env[name.Lit] = v.Param(i)
 		}
-		ret, err := b.gen(x.RHS, x.Name)
+		ret, err := b.gen(x.RHS, x.Name.Lit)
 		if err != nil {
 			return llvm.Value{}, err
 		}
@@ -165,18 +166,18 @@ func (b *Builder) checkCR(name, referredFrom string) error {
 func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 	switch x := expr.(type) {
 	case *ast.Ident:
-		if x.Name == referredFrom {
+		if x.Name.Lit == referredFrom {
 			return llvm.Value{}, fmt.Errorf("self-reference: %s", x.Name)
 		}
 		// Note that there is possibility of duplication.
-		b.refers[referredFrom] = append(b.refers[referredFrom], x.Name)
-		err := b.checkCR(x.Name, referredFrom)
+		b.refers[referredFrom] = append(b.refers[referredFrom], x.Name.Lit)
+		err := b.checkCR(x.Name.Lit, referredFrom)
 		if err != nil {
 			return llvm.Value{}, err
 		}
-		t, found := b.env[x.Name]
+		t, found := b.env[x.Name.Lit]
 		if !found {
-			t, err = b.resolve(x.Name)
+			t, err = b.resolve(x.Name.Lit)
 			if err != nil {
 				return llvm.Value{}, err
 			}
@@ -184,9 +185,9 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		return t, nil
 	case *ast.App:
 		var err error
-		t, found := b.env[x.FnName]
+		t, found := b.env[x.FnName.Lit]
 		if !found {
-			t, err = b.resolve(x.FnName)
+			t, err = b.resolve(x.FnName.Lit)
 			if err != nil {
 				return llvm.Value{}, err
 			}
@@ -200,7 +201,11 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		}
 		return b.CreateCall(t, args, "call"), nil
 	case *ast.Int:
-		return llvm.ConstInt(llvm.Int32Type(), uint64(x.X), false), nil
+		n, err := strconv.Atoi(x.X.Lit)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		return llvm.ConstInt(llvm.Int32Type(), uint64(n), false), nil
 	case *ast.Add:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {

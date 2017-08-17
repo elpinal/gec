@@ -1,11 +1,13 @@
 package ast
 
+import "github.com/elpinal/gec/token"
+
 type Expr interface {
 	expr()
 }
 
 type Int struct {
-	X int
+	X token.Token
 }
 
 func (x *Int) expr() {}
@@ -35,7 +37,7 @@ type Div struct {
 func (x *Div) expr() {}
 
 type Ident struct {
-	Name string
+	Name token.Token
 }
 
 func (x *Ident) expr() {}
@@ -50,26 +52,26 @@ type Decl interface {
 }
 
 type Assign struct {
-	LHS string
+	LHS token.Token
 	RHS Expr
 }
 
 func (x *Assign) LName() string {
-	return x.LHS
+	return x.LHS.Lit
 }
 
 type DeclFunc struct {
-	Name string
-	Args []string
+	Name token.Token
+	Args []token.Token
 	RHS  Expr
 }
 
 func (x *DeclFunc) LName() string {
-	return x.Name
+	return x.Name.Lit
 }
 
 type App struct {
-	FnName string
+	FnName token.Token
 	Args   []Expr
 }
 

@@ -2,7 +2,10 @@
 
 package main
 
-import "github.com/elpinal/gec/ast"
+import (
+        "github.com/elpinal/gec/ast"
+        "github.com/elpinal/gec/token"
+)
 
 %}
 
@@ -12,9 +15,8 @@ import "github.com/elpinal/gec/ast"
         decls []ast.Decl
         expr ast.Expr
         exprs []ast.Expr
-        num int
-        ident string
-        args []string
+        token token.Token
+        args []token.Token
 }
 
 %type <top> top
@@ -24,9 +26,7 @@ import "github.com/elpinal/gec/ast"
 %type <decls> decls
 %type <args> args
 
-%token ILLEGAL
-%token <num> NUM
-%token <ident> IDENT
+%token <token> ILLEGAL NUM IDENT
 
 %%
 
@@ -69,7 +69,7 @@ decl:
 args:
         IDENT
         {
-                $$ = []string{$1}
+                $$ = []token.Token{$1}
         }
 |	args IDENT
         {

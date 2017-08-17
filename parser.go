@@ -4,9 +4,12 @@ package main
 import __yyfmt__ "fmt"
 
 //line parser.y:3
-import "github.com/elpinal/gec/ast"
+import (
+	"github.com/elpinal/gec/ast"
+	"github.com/elpinal/gec/token"
+)
 
-//line parser.y:9
+//line parser.y:12
 type yySymType struct {
 	yys   int
 	top   *ast.WithDecls
@@ -14,9 +17,8 @@ type yySymType struct {
 	decls []ast.Decl
 	expr  ast.Expr
 	exprs []ast.Expr
-	num   int
-	ident string
-	args  []string
+	token token.Token
+	args  []token.Token
 }
 
 const ILLEGAL = 57346
@@ -493,25 +495,25 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:61
 		{
-			yyVAL.decl = &ast.Assign{LHS: yyDollar[1].ident, RHS: yyDollar[3].expr}
+			yyVAL.decl = &ast.Assign{LHS: yyDollar[1].token, RHS: yyDollar[3].expr}
 		}
 	case 6:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		//line parser.y:65
 		{
-			yyVAL.decl = &ast.DeclFunc{Name: yyDollar[1].ident, Args: yyDollar[2].args, RHS: yyDollar[4].expr}
+			yyVAL.decl = &ast.DeclFunc{Name: yyDollar[1].token, Args: yyDollar[2].args, RHS: yyDollar[4].expr}
 		}
 	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:71
 		{
-			yyVAL.args = []string{yyDollar[1].ident}
+			yyVAL.args = []token.Token{yyDollar[1].token}
 		}
 	case 8:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		//line parser.y:75
 		{
-			yyVAL.args = append(yyDollar[1].args, yyDollar[2].ident)
+			yyVAL.args = append(yyDollar[1].args, yyDollar[2].token)
 		}
 	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -559,7 +561,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 		//line parser.y:113
 		{
-			yyVAL.expr = &ast.App{FnName: yyDollar[1].ident, Args: yyDollar[2].exprs}
+			yyVAL.expr = &ast.App{FnName: yyDollar[1].token, Args: yyDollar[2].exprs}
 		}
 	case 17:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -577,13 +579,13 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:129
 		{
-			yyVAL.expr = &ast.Int{X: yyDollar[1].num}
+			yyVAL.expr = &ast.Int{X: yyDollar[1].token}
 		}
 	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:133
 		{
-			yyVAL.expr = &ast.Ident{Name: yyDollar[1].ident}
+			yyVAL.expr = &ast.Ident{Name: yyDollar[1].token}
 		}
 	}
 	goto yystack /* stack new state and value */
