@@ -21,7 +21,7 @@ func main() {
 	}
 	b, err := ioutil.ReadFile(flag.Arg(0))
 	if err != nil {
-		fmt.Fprintln(os.Stdout, err)
+		fmt.Fprintf(os.Stdout, "gec: %v\n", err)
 		os.Exit(1)
 	}
 	err = run(b, logFile)
