@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/elpinal/gec/ast"
+	"github.com/elpinal/gec/token"
 
 	"llvm.org/llvm/bindings/go/llvm"
 )
@@ -95,16 +96,16 @@ func (b *Builder) reserve(wd *ast.WithDecls) (ast.Expr, error) {
 	return wd.Expr, nil
 }
 
-func (b *Builder) resolve(name string) (llvm.Value, error) {
-	decl, found := b.decls[name]
+func (b *Builder) resolve(tok token.Token) (llvm.Value, error) {
+	decl, found := b.decls[tok.Lit]
 	if !found {
-		return llvm.Value{}, fmt.Errorf("unknown name: %s", name)
+		return llvm.Value{}, fmt.Errorf("%d:%d: unknown name: %q", tok.Line, tok.Column, tok.Lit)
 	}
 	t, err := b.genDecl(decl)
 	if err != nil {
 		return llvm.Value{}, err
 	}
-	b.env[name] = t
+	b.env[tok.Lit] = t
 	return t, nil
 }
 
@@ -176,7 +177,7 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		}
 		t, found := b.env[x.Name.Lit]
 		if !found {
-			t, err = b.resolve(x.Name.Lit)
+			t, err = b.resolve(x.Name)
 			if err != nil {
 				return llvm.Value{}, err
 			}
@@ -186,7 +187,7 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		var err error
 		t, found := b.env[x.FnName.Lit]
 		if !found {
-			t, err = b.resolve(x.FnName.Lit)
+			t, err = b.resolve(x.FnName)
 			if err != nil {
 				return llvm.Value{}, err
 			}
