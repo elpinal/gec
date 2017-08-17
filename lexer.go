@@ -43,7 +43,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			return eof
 		case '=', '+', '-', '*', '/', ';':
 			return int(c)
-		case ' ':
+		case ' ', '\n':
 		default:
 			if isAlphabet(c) {
 				return x.ident(c, yylval)
@@ -51,7 +51,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			if isNumber(c) {
 				return x.num(c, yylval)
 			}
-			fmt.Fprintf(os.Stderr, "[offset: %d]: invalid character: %[1]U %[1]q\n", x.off, c)
+			fmt.Fprintf(os.Stderr, "[%d:%d]: invalid character: %[1]U %[1]q\n", x.line, x.column, c)
 			return ILLEGAL
 		}
 	}
@@ -121,7 +121,7 @@ func (x *exprLexer) next() rune {
 }
 
 func (x *exprLexer) Error(s string) {
-	x.err = fmt.Errorf("[offset: %d]: %s", x.off, s)
+	x.err = fmt.Errorf("[%d:%d]: %s", x.line, x.column, s)
 }
 
 func parse(src []byte) (*ast.WithDecls, error) {
