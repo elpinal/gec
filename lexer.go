@@ -16,15 +16,22 @@ import (
 const eof = 0
 
 type exprLexer struct {
-	src  []byte
-	peek rune
-	err  error
+	src []byte
+	ch  rune
+	err error
 
 	expr *ast.WithDecls
 
 	off    int // information for error messages
 	line   uint
 	column uint
+}
+
+func newLexer(src []byte) *exprLexer {
+	return &exprLexer{
+		src:  src,
+		line: 1,
+	}
 }
 
 func isAlphabet(c rune) bool {
@@ -37,7 +44,8 @@ func isNumber(c rune) bool {
 
 func (x *exprLexer) Lex(yylval *yySymType) int {
 	for {
-		c := x.next()
+		x.next()
+		c := x.ch
 		switch c {
 		case eof:
 			return eof
@@ -46,45 +54,37 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 		case ' ', '\n':
 		default:
 			if isAlphabet(c) {
-				return x.ident(c, yylval)
+				return x.ident(yylval)
 			}
 			if isNumber(c) {
-				return x.num(c, yylval)
+				return x.num(yylval)
 			}
-			fmt.Fprintf(os.Stderr, "[%d:%d]: invalid character: %[1]U %[1]q\n", x.line, x.column, c)
+			fmt.Fprintf(os.Stderr, "[%d:%d]: invalid character: %[3]U %[3]q\n", x.line, x.column, c)
 			return ILLEGAL
 		}
 	}
 }
 
-func (x *exprLexer) num(c rune, yylval *yySymType) int {
-	return x.takeWhile(c, NUM, isNumber, yylval)
+func (x *exprLexer) num(yylval *yySymType) int {
+	return x.takeWhile(NUM, isNumber, yylval)
 }
 
-func (x *exprLexer) ident(c rune, yylval *yySymType) int {
-	return x.takeWhile(c, IDENT, isAlphabet, yylval)
+func (x *exprLexer) ident(yylval *yySymType) int {
+	return x.takeWhile(IDENT, isAlphabet, yylval)
 }
 
-func (x *exprLexer) takeWhile(c rune, kind int, f func(rune) bool, yylval *yySymType) int {
+func (x *exprLexer) takeWhile(kind int, f func(rune) bool, yylval *yySymType) int {
 	add := func(b *bytes.Buffer, c rune) {
 		if _, err := b.WriteRune(c); err != nil {
 			x.err = fmt.Errorf("WriteRune: %s", err)
 		}
 	}
 	var b bytes.Buffer
-	add(&b, c)
 	line := x.line
 	column := x.column
-	for {
-		c = x.next()
-		if f(c) {
-			add(&b, c)
-		} else {
-			break
-		}
-	}
-	if c != eof {
-		x.peek = c
+	for f(x.ch) {
+		add(&b, x.ch)
+		x.next()
 	}
 	yylval.token = token.Token{
 		Lit:    b.String(),
@@ -95,14 +95,10 @@ func (x *exprLexer) takeWhile(c rune, kind int, f func(rune) bool, yylval *yySym
 	return kind
 }
 
-func (x *exprLexer) next() rune {
-	if x.peek != eof {
-		r := x.peek
-		x.peek = eof
-		return r
-	}
+func (x *exprLexer) next() {
 	if len(x.src) == 0 {
-		return eof
+		x.ch = eof
+		return
 	}
 	c, size := utf8.DecodeRune(x.src)
 	x.src = x.src[size:]
@@ -115,9 +111,10 @@ func (x *exprLexer) next() rune {
 	}
 	if c == utf8.RuneError && size == 1 {
 		x.err = errors.New("next: invalid utf8")
-		return x.next()
+		x.next()
+		return
 	}
-	return c
+	x.ch = c
 }
 
 func (x *exprLexer) Error(s string) {
@@ -125,9 +122,9 @@ func (x *exprLexer) Error(s string) {
 }
 
 func parse(src []byte) (*ast.WithDecls, error) {
-	l := exprLexer{src: src}
+	l := newLexer(src)
 	yyErrorVerbose = true
-	yyParse(&l)
+	yyParse(l)
 	if l.err != nil {
 		return nil, l.err
 	}
