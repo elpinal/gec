@@ -31,20 +31,25 @@ func isAlphabet(c rune) bool {
 	return 'A' <= c && c <= 'Z' || 'a' <= c && c <= 'z'
 }
 
+func isNumber(c rune) bool {
+	return '0' <= c && c <= '9'
+}
+
 func (x *exprLexer) Lex(yylval *yySymType) int {
 	for {
 		c := x.next()
 		switch c {
 		case eof:
 			return eof
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-			return x.num(c, yylval)
 		case '=', '+', '-', '*', '/', ';':
 			return int(c)
 		case ' ':
 		default:
 			if isAlphabet(c) {
 				return x.ident(c, yylval)
+			}
+			if isNumber(c) {
+				return x.num(c, yylval)
 			}
 			fmt.Fprintf(os.Stderr, "[offset: %d]: invalid character: %[1]U %[1]q\n", x.off, c)
 			return int(ILLEGAL)
@@ -62,14 +67,12 @@ func (x *exprLexer) num(c rune, yylval *yySymType) int {
 	add(&b, c)
 	line := x.line
 	column := x.column
-L:
 	for {
 		c = x.next()
-		switch c {
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+		if isNumber(c) {
 			add(&b, c)
-		default:
-			break L
+		} else {
+			break
 		}
 	}
 	if c != eof {
@@ -94,14 +97,12 @@ func (x *exprLexer) ident(c rune, yylval *yySymType) int {
 	add(&b, c)
 	line := x.line
 	column := x.column
-L:
 	for {
 		c = x.next()
-		switch {
-		case isAlphabet(c):
+		if isAlphabet(c) {
 			add(&b, c)
-		default:
-			break L
+		} else {
+			break
 		}
 	}
 	if c != eof {
