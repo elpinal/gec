@@ -58,33 +58,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 }
 
 func (x *exprLexer) num(c rune, yylval *yySymType) int {
-	add := func(b *bytes.Buffer, c rune) {
-		if _, err := b.WriteRune(c); err != nil {
-			x.err = fmt.Errorf("WriteRune: %s", err)
-		}
-	}
-	var b bytes.Buffer
-	add(&b, c)
-	line := x.line
-	column := x.column
-	for {
-		c = x.next()
-		if isNumber(c) {
-			add(&b, c)
-		} else {
-			break
-		}
-	}
-	if c != eof {
-		x.peek = c
-	}
-	yylval.token = token.Token{
-		Lit:    b.String(),
-		Kind:   NUM,
-		Line:   line,
-		Column: column,
-	}
-	return NUM
+	return x.takeWhile(c, NUM, isNumber, yylval)
 }
 
 func (x *exprLexer) ident(c rune, yylval *yySymType) int {
