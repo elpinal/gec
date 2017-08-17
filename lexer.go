@@ -28,10 +28,12 @@ type exprLexer struct {
 }
 
 func newLexer(src []byte) *exprLexer {
-	return &exprLexer{
+	l := &exprLexer{
 		src:  src,
 		line: 1,
 	}
+	l.next()
+	return l
 }
 
 func isAlphabet(c rune) bool {
@@ -44,14 +46,15 @@ func isNumber(c rune) bool {
 
 func (x *exprLexer) Lex(yylval *yySymType) int {
 	for {
-		x.next()
 		c := x.ch
 		switch c {
 		case eof:
 			return eof
 		case '=', '+', '-', '*', '/', ';':
+			x.next()
 			return int(c)
 		case ' ', '\n':
+			x.next()
 		default:
 			if isAlphabet(c) {
 				return x.ident(yylval)
