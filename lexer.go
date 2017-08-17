@@ -24,9 +24,9 @@ type exprLexer struct {
 	expr *ast.WithDecls
 
 	// information for error messages
-	off    uint
-	line   uint
-	column uint
+	off    uint // start at 0
+	line   uint // start at 1
+	column uint // start at 1
 }
 
 func newLexer(src []byte) *exprLexer {
