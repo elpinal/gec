@@ -88,6 +88,10 @@ func (x *exprLexer) num(c rune, yylval *yySymType) int {
 }
 
 func (x *exprLexer) ident(c rune, yylval *yySymType) int {
+	return x.takeWhile(c, IDENT, isAlphabet, yylval)
+}
+
+func (x *exprLexer) takeWhile(c rune, kind int, f func(rune) bool, yylval *yySymType) int {
 	add := func(b *bytes.Buffer, c rune) {
 		if _, err := b.WriteRune(c); err != nil {
 			x.err = fmt.Errorf("WriteRune: %s", err)
@@ -99,7 +103,7 @@ func (x *exprLexer) ident(c rune, yylval *yySymType) int {
 	column := x.column
 	for {
 		c = x.next()
-		if isAlphabet(c) {
+		if f(c) {
 			add(&b, c)
 		} else {
 			break
@@ -110,11 +114,11 @@ func (x *exprLexer) ident(c rune, yylval *yySymType) int {
 	}
 	yylval.token = token.Token{
 		Lit:    b.String(),
-		Kind:   IDENT,
+		Kind:   kind,
 		Line:   line,
 		Column: column,
 	}
-	return IDENT
+	return kind
 }
 
 func (x *exprLexer) next() rune {
