@@ -22,7 +22,7 @@ type exprLexer struct {
 
 	expr *ast.WithDecls
 
-	off    int // information for error messages
+	off    uint // information for error messages
 	line   uint
 	column uint
 }
