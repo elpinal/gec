@@ -87,9 +87,10 @@ func run(input []byte, logFile *string) error {
 
 func (b *Builder) reserve(wd *ast.WithDecls) (ast.Expr, error) {
 	for _, decl := range wd.Decls {
-		if _, found := b.decls[decl.LName()]; found {
-			//TODO: Show previously declared position.
-			return nil, fmt.Errorf("redeclared: %s", decl.LName())
+		if prev, found := b.decls[decl.LName()]; found {
+			l, c := decl.Position()
+			pl, pc := prev.Position()
+			return nil, fmt.Errorf("redeclared at %d:%d: %s, previously declared at %d:%d", l, c, decl.LName(), pl, pc)
 		}
 		b.decls[decl.LName()] = decl
 	}

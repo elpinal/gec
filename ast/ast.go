@@ -49,6 +49,7 @@ type WithDecls struct {
 
 type Decl interface {
 	LName() string
+	Position() (uint, uint)
 }
 
 type Assign struct {
@@ -60,6 +61,10 @@ func (x *Assign) LName() string {
 	return x.LHS.Lit
 }
 
+func (x *Assign) Position() (uint, uint) {
+	return x.LHS.Line, x.LHS.Column
+}
+
 type DeclFunc struct {
 	Name token.Token
 	Args []token.Token
@@ -68,6 +73,10 @@ type DeclFunc struct {
 
 func (x *DeclFunc) LName() string {
 	return x.Name.Lit
+}
+
+func (x *DeclFunc) Position() (uint, uint) {
+	return x.Name.Line, x.Name.Column
 }
 
 type App struct {
