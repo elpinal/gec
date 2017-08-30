@@ -96,11 +96,12 @@ func run(input []byte, logFile *string) error {
 	}
 	builder.CreateRet(v)
 
-	if err := llvm.VerifyModule(builder.module, llvm.ReturnStatusAction); err != nil {
-		return err
-	}
 	if logFile != nil {
 		ioutil.WriteFile(*logFile, []byte(builder.module.String()), 0666)
+	}
+
+	if err := llvm.VerifyModule(builder.module, llvm.ReturnStatusAction); err != nil {
+		return err
 	}
 
 	engine, err := llvm.NewExecutionEngine(builder.module)
