@@ -40,6 +40,7 @@ type Builder struct {
 	llvm.Builder
 	module llvm.Module
 	env    map[string]types.Expr
+	params map[string]llvm.Value
 	decls  map[string]*ast.Decl
 	refers map[string][]string
 	entry  llvm.BasicBlock
@@ -49,6 +50,7 @@ func newBuilder(lb llvm.Builder) *Builder {
 	return &Builder{
 		Builder: lb,
 		env:     make(map[string]types.Expr),
+		params:  make(map[string]llvm.Value),
 		decls:   make(map[string]*ast.Decl),
 		refers:  make(map[string][]string),
 	}
@@ -78,7 +80,7 @@ func run(input []byte, logFile *string) error {
 	}
 
 	pp.Println(a)
-	v, err := builder.gen(a)
+	v, err := builder.gen(a, &types.TInt{})
 	if err != nil {
 		return err
 	}
@@ -191,9 +193,14 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		}
 		return &types.EApp{e1, e2}, nil
 	case *ast.Abs:
+		o, ok := b.env[x.Param.Lit]
+		b.env[x.Param.Lit] = &types.EVar{x.Param.Lit}
 		e, err := b.genIR(x.Body, referredFrom)
 		if err != nil {
 			return nil, err
+		}
+		if ok {
+			b.env[x.Param.Lit] = o
 		}
 		return &types.EAbs{x.Param.Lit, e}, nil
 	case *ast.Int:
@@ -246,7 +253,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }
 
-func (b *Builder) gen(expr types.Expr) (llvm.Value, error) {
+func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) {
 	switch x := expr.(type) {
 	case *types.EApp:
 		ti := types.TI{}
@@ -254,36 +261,44 @@ func (b *Builder) gen(expr types.Expr) (llvm.Value, error) {
 		if err != nil {
 			return llvm.Value{}, err
 		}
+
+		a, err := b.gen(x.Fn, &types.TFun{t, expected})
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		arg, err := b.gen(x.Arg, t)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		return b.CreateCall(a, []llvm.Value{arg}, "call"), nil
+	case *types.EAbs:
 		f := llvm.FunctionType(
 			llvm.Int32Type(),
-			[]llvm.Type{llvmType(t)},
+			[]llvm.Type{llvmType(expected.(*types.TFun).Arg)},
 			false,
 		)
 		v := llvm.AddFunction(b.module, "fun", f)
 		block := llvm.AddBasicBlock(v, "entry")
 		b.SetInsertPointAtEnd(block)
 
-		_, err = b.gen(x.Fn)
-		if err != nil {
-			return llvm.Value{}, err
-		}
-
-		arg, err := b.gen(x.Arg)
-		if err != nil {
-			return llvm.Value{}, err
-		}
-		return b.CreateCall(v, []llvm.Value{arg}, "call"), nil
-	case *types.EAbs:
-		a, err := b.gen(x.Body)
+		b.params[x.Param] = v.Param(0)
+		a, err := b.gen(x.Body, expected.(*types.TFun).Body)
 		if err != nil {
 			return llvm.Value{}, err
 		}
 
 		b.CreateRet(a)
 		b.SetInsertPointAtEnd(b.entry)
-		return llvm.Value{}, err
+		return v, err
 	case *types.EInt:
 		return llvm.ConstInt(llvm.Int32Type(), uint64(x.Value), false), nil
+	case *types.EVar:
+		v, ok := b.params[x.Name]
+		if !ok {
+			return llvm.Value{}, fmt.Errorf("gen: unbound variable: %v", expr)
+		}
+		return v, nil
 	}
 	return llvm.Value{}, fmt.Errorf("gen: unexpected type: %#v", expr)
 }
