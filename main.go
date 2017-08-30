@@ -282,6 +282,8 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		v := llvm.AddFunction(b.module, "fun", f)
 		v.Param(0).SetName(x.Param)
 		block := llvm.AddBasicBlock(v, "entry")
+		prevEntry := b.entry
+		b.entry = block
 		b.SetInsertPointAtEnd(block)
 
 		b.params[x.Param] = v.Param(0)
@@ -291,7 +293,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		}
 
 		b.CreateRet(a)
-		b.SetInsertPointAtEnd(b.entry)
+		b.SetInsertPointAtEnd(prevEntry)
 		return v, err
 	case *types.EInt:
 		return llvm.ConstInt(llvm.Int32Type(), uint64(x.Value), false), nil
