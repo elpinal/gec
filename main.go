@@ -300,7 +300,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		}
 		return v, nil
 	}
-	return llvm.Value{}, fmt.Errorf("gen: unexpected type: %#v", expr)
+	return llvm.Value{}, fmt.Errorf("LLVM IR generation: unexpected expression: %#v", expr)
 }
 
 func llvmType(t types.Type) llvm.Type {
