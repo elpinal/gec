@@ -14,7 +14,7 @@ import (
 
 	"llvm.org/llvm/bindings/go/llvm"
 
-	"github.com/elpinal/types-go"
+	"github.com/elpinal/gec/types"
 )
 
 func main() {
@@ -218,7 +218,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
-		return &ArithBinOp{EAdd, e1, e2}, nil
+		return &types.EArithBinOp{types.Add, e1, e2}, nil
 	case *ast.Sub:
 		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
@@ -228,7 +228,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
-		return &ArithBinOp{ESub, e1, e2}, nil
+		return &types.EArithBinOp{types.Sub, e1, e2}, nil
 	case *ast.Mul:
 		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
@@ -238,7 +238,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
-		return &ArithBinOp{EMul, e1, e2}, nil
+		return &types.EArithBinOp{types.Mul, e1, e2}, nil
 	case *ast.Div:
 		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
@@ -248,7 +248,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
-		return &ArithBinOp{EDiv, e1, e2}, nil
+		return &types.EArithBinOp{types.Div, e1, e2}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }
@@ -299,6 +299,19 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 			return llvm.Value{}, fmt.Errorf("gen: unbound variable: %v", expr)
 		}
 		return v, nil
+	case *types.EArithBinOp:
+		switch x.Op {
+		case types.Add:
+			v1, err := b.gen(x.E1, &types.TInt{})
+			if err != nil {
+				return llvm.Value{}, err
+			}
+			v2, err := b.gen(x.E2, &types.TInt{})
+			if err != nil {
+				return llvm.Value{}, err
+			}
+			return b.CreateAdd(v1, v2, "add"), nil
+		}
 	}
 	return llvm.Value{}, fmt.Errorf("LLVM IR generation: unexpected expression: %#v", expr)
 }
