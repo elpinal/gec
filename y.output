@@ -2,16 +2,19 @@
 state 0
 	$accept: .top $end 
 
-	NUM  shift 9
-	IDENT  shift 7
+	NUM  shift 12
+	IDENT  shift 9
+	'\\'  shift 7
 	.  error
 
 	top  goto 1
-	expr  goto 2
-	term  goto 4
-	factor  goto 6
-	atom  goto 8
-	decl  goto 5
+	expr  goto 5
+	term  goto 8
+	factor  goto 10
+	atom  goto 11
+	absexpr  goto 2
+	abs  goto 4
+	decl  goto 6
 	decls  goto 3
 
 state 1
@@ -22,244 +25,290 @@ state 1
 
 
 state 2
-	top:  expr.    (1)
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
+	top:  absexpr.    (1)
 
-	'+'  shift 10
-	'-'  shift 11
 	.  reduce 1 (src line 31)
 
 
 state 3
-	top:  decls.';' expr 
+	top:  decls.';' absexpr 
 	decls:  decls.';' decl 
 
-	';'  shift 12
+	';'  shift 13
 	.  error
 
 
 state 4
-	expr:  term.    (6)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	absexpr:  abs.    (6)
 
-	'*'  shift 13
-	'/'  shift 14
 	.  reduce 6 (src line 63)
 
 
 state 5
+	absexpr:  expr.    (7)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
+
+	'+'  shift 14
+	'-'  shift 15
+	.  reduce 7 (src line 68)
+
+
+state 6
 	decls:  decl.    (4)
 
 	.  reduce 4 (src line 52)
 
 
-state 6
-	term:  factor.    (9)
-
-	.  reduce 9 (src line 77)
-
-
 state 7
-	decl:  IDENT.'=' expr 
-	factor:  IDENT.atoms 
-	atom:  IDENT.    (17)
+	abs:  '\\'.IDENT RARROW expr 
 
-	NUM  shift 9
-	IDENT  shift 18
-	'='  shift 15
-	.  reduce 17 (src line 116)
+	IDENT  shift 16
+	.  error
 
-	atom  goto 17
-	atoms  goto 16
 
 state 8
-	factor:  atom.    (12)
+	expr:  term.    (8)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
-	.  reduce 12 (src line 91)
+	'*'  shift 17
+	'/'  shift 18
+	.  reduce 8 (src line 73)
 
 
 state 9
-	atom:  NUM.    (16)
+	decl:  IDENT.'=' absexpr 
+	factor:  IDENT.atoms 
+	atom:  IDENT.    (19)
 
-	.  reduce 16 (src line 111)
+	NUM  shift 12
+	IDENT  shift 22
+	'='  shift 19
+	.  reduce 19 (src line 126)
 
+	atom  goto 21
+	atoms  goto 20
 
 state 10
-	expr:  expr '+'.term 
+	term:  factor.    (11)
 
-	NUM  shift 9
-	IDENT  shift 20
-	.  error
+	.  reduce 11 (src line 87)
 
-	term  goto 19
-	factor  goto 6
-	atom  goto 8
 
 state 11
-	expr:  expr '-'.term 
+	factor:  atom.    (14)
 
-	NUM  shift 9
-	IDENT  shift 20
-	.  error
+	.  reduce 14 (src line 101)
 
-	term  goto 21
-	factor  goto 6
-	atom  goto 8
 
 state 12
-	top:  decls ';'.expr 
-	decls:  decls ';'.decl 
+	atom:  NUM.    (18)
 
-	NUM  shift 9
-	IDENT  shift 7
-	.  error
+	.  reduce 18 (src line 121)
 
-	expr  goto 22
-	term  goto 4
-	factor  goto 6
-	atom  goto 8
-	decl  goto 23
 
 state 13
-	term:  term '*'.factor 
+	top:  decls ';'.absexpr 
+	decls:  decls ';'.decl 
 
-	NUM  shift 9
-	IDENT  shift 20
+	NUM  shift 12
+	IDENT  shift 9
+	'\\'  shift 7
 	.  error
 
-	factor  goto 24
-	atom  goto 8
+	expr  goto 5
+	term  goto 8
+	factor  goto 10
+	atom  goto 11
+	absexpr  goto 23
+	abs  goto 4
+	decl  goto 24
 
 state 14
-	term:  term '/'.factor 
+	expr:  expr '+'.term 
 
-	NUM  shift 9
-	IDENT  shift 20
+	NUM  shift 12
+	IDENT  shift 26
 	.  error
 
-	factor  goto 25
-	atom  goto 8
+	term  goto 25
+	factor  goto 10
+	atom  goto 11
 
 state 15
-	decl:  IDENT '='.expr 
+	expr:  expr '-'.term 
 
-	NUM  shift 9
-	IDENT  shift 20
+	NUM  shift 12
+	IDENT  shift 26
 	.  error
 
-	expr  goto 26
-	term  goto 4
-	factor  goto 6
-	atom  goto 8
+	term  goto 27
+	factor  goto 10
+	atom  goto 11
 
 state 16
-	factor:  IDENT atoms.    (13)
-	atoms:  atoms.atom 
+	abs:  '\\' IDENT.RARROW expr 
 
-	NUM  shift 9
-	IDENT  shift 18
-	.  reduce 13 (src line 96)
+	RARROW  shift 28
+	.  error
 
-	atom  goto 27
 
 state 17
-	atoms:  atom.    (15)
+	term:  term '*'.factor 
 
-	.  reduce 15 (src line 106)
+	NUM  shift 12
+	IDENT  shift 26
+	.  error
 
+	factor  goto 29
+	atom  goto 11
 
 state 18
-	atom:  IDENT.    (17)
+	term:  term '/'.factor 
 
-	.  reduce 17 (src line 116)
+	NUM  shift 12
+	IDENT  shift 26
+	.  error
 
+	factor  goto 30
+	atom  goto 11
 
 state 19
-	expr:  expr '+' term.    (7)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	decl:  IDENT '='.absexpr 
 
-	'*'  shift 13
-	'/'  shift 14
-	.  reduce 7 (src line 68)
+	NUM  shift 12
+	IDENT  shift 26
+	'\\'  shift 7
+	.  error
 
+	expr  goto 5
+	term  goto 8
+	factor  goto 10
+	atom  goto 11
+	absexpr  goto 31
+	abs  goto 4
 
 state 20
-	factor:  IDENT.atoms 
-	atom:  IDENT.    (17)
+	factor:  IDENT atoms.    (15)
+	atoms:  atoms.atom 
 
-	NUM  shift 9
-	IDENT  shift 18
-	.  reduce 17 (src line 116)
+	NUM  shift 12
+	IDENT  shift 22
+	.  reduce 15 (src line 106)
 
-	atom  goto 17
-	atoms  goto 16
+	atom  goto 32
 
 state 21
-	expr:  expr '-' term.    (8)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	atoms:  atom.    (17)
 
-	'*'  shift 13
-	'/'  shift 14
-	.  reduce 8 (src line 72)
+	.  reduce 17 (src line 116)
 
 
 state 22
-	top:  decls ';' expr.    (2)
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
+	atom:  IDENT.    (19)
 
-	'+'  shift 10
-	'-'  shift 11
-	.  reduce 2 (src line 39)
+	.  reduce 19 (src line 126)
 
 
 state 23
+	top:  decls ';' absexpr.    (2)
+
+	.  reduce 2 (src line 39)
+
+
+state 24
 	decls:  decls ';' decl.    (3)
 
 	.  reduce 3 (src line 47)
 
 
-state 24
-	term:  term '*' factor.    (10)
-
-	.  reduce 10 (src line 82)
-
-
 state 25
-	term:  term '/' factor.    (11)
+	expr:  expr '+' term.    (9)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
-	.  reduce 11 (src line 86)
+	'*'  shift 17
+	'/'  shift 18
+	.  reduce 9 (src line 78)
 
 
 state 26
-	decl:  IDENT '=' expr.    (5)
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
+	factor:  IDENT.atoms 
+	atom:  IDENT.    (19)
 
-	'+'  shift 10
-	'-'  shift 11
+	NUM  shift 12
+	IDENT  shift 22
+	.  reduce 19 (src line 126)
+
+	atom  goto 21
+	atoms  goto 20
+
+state 27
+	expr:  expr '-' term.    (10)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
+
+	'*'  shift 17
+	'/'  shift 18
+	.  reduce 10 (src line 82)
+
+
+state 28
+	abs:  '\\' IDENT RARROW.expr 
+
+	NUM  shift 12
+	IDENT  shift 26
+	.  error
+
+	expr  goto 33
+	term  goto 8
+	factor  goto 10
+	atom  goto 11
+
+state 29
+	term:  term '*' factor.    (12)
+
+	.  reduce 12 (src line 92)
+
+
+state 30
+	term:  term '/' factor.    (13)
+
+	.  reduce 13 (src line 96)
+
+
+state 31
+	decl:  IDENT '=' absexpr.    (5)
+
 	.  reduce 5 (src line 57)
 
 
-state 27
-	atoms:  atoms atom.    (14)
+state 32
+	atoms:  atoms atom.    (16)
 
-	.  reduce 14 (src line 101)
+	.  reduce 16 (src line 111)
 
 
-12 terminals, 9 nonterminals
-18 grammar rules, 28/8000 states
+state 33
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
+	abs:  '\\' IDENT RARROW expr.    (20)
+
+	'+'  shift 14
+	'-'  shift 15
+	.  reduce 20 (src line 131)
+
+
+14 terminals, 11 nonterminals
+21 grammar rules, 34/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-58 working sets used
-memory: parser 29/120000
-16 extra closures
-34 shift entries, 1 exceptions
-18 goto entries
-13 entries saved by goto default
-Optimizer space used: output 32/120000
-32 table entries, 0 zero
-maximum spread: 12, maximum offset: 20
+60 working sets used
+memory: parser 38/120000
+22 extra closures
+39 shift entries, 1 exceptions
+21 goto entries
+20 entries saved by goto default
+Optimizer space used: output 41/120000
+41 table entries, 0 zero
+maximum spread: 14, maximum offset: 28

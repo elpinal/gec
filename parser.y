@@ -19,24 +19,24 @@ import (
 }
 
 %type <top> top
-%type <expr> expr term factor atom
+%type <expr> expr term factor atom absexpr abs
 %type <exprs> atoms
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NUM IDENT
+%token <token> ILLEGAL NUM IDENT RARROW
 
 %%
 
 top:
-        expr
+        absexpr
         {
                 $$ = &ast.WithDecls{Expr: $1}
                 if l, ok := yylex.(*exprLexer); ok {
                         l.expr = $$
                 }
         }
-|	decls ';' expr
+|	decls ';' absexpr
         {
                 $$ = &ast.WithDecls{Decls: $1, Expr: $3}
                 if l, ok := yylex.(*exprLexer); ok {
@@ -55,9 +55,19 @@ decls:
         }
 
 decl:
-        IDENT '=' expr
+        IDENT '=' absexpr
         {
                 $$ = &ast.Decl{LHS: $1, RHS: $3}
+        }
+
+absexpr:
+        abs
+        {
+                $$ = $1
+        }
+|	expr
+        {
+                $$ = $1
         }
 
 expr:
@@ -116,6 +126,12 @@ atom:
 |	IDENT
         {
                 $$ = &ast.Ident{Name: $1}
+        }
+
+abs:
+        '\\' IDENT RARROW expr
+        {
+                $$ = &ast.Abs{Param: $2, Body: $4}
         }
 
 %%

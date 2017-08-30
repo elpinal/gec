@@ -23,6 +23,7 @@ type yySymType struct {
 const ILLEGAL = 57346
 const NUM = 57347
 const IDENT = 57348
+const RARROW = 57349
 
 var yyToknames = [...]string{
 	"$end",
@@ -31,12 +32,14 @@ var yyToknames = [...]string{
 	"ILLEGAL",
 	"NUM",
 	"IDENT",
+	"RARROW",
 	"';'",
 	"'='",
 	"'+'",
 	"'-'",
 	"'*'",
 	"'/'",
+	"'\\\\'",
 }
 var yyStatenames = [...]string{}
 
@@ -44,7 +47,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:121
+//line parser.y:137
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -55,46 +58,53 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 32
+const yyLast = 41
 
 var yyAct = [...]int{
 
-	8, 5, 2, 13, 14, 6, 10, 11, 17, 9,
-	18, 4, 15, 12, 23, 22, 3, 27, 26, 24,
-	25, 17, 19, 21, 9, 18, 9, 20, 9, 7,
-	16, 1,
+	11, 5, 2, 8, 13, 10, 12, 26, 12, 9,
+	21, 17, 18, 28, 6, 7, 23, 7, 25, 27,
+	16, 32, 31, 29, 30, 14, 15, 21, 24, 3,
+	33, 12, 22, 12, 26, 19, 12, 22, 20, 4,
+	1,
 }
 var yyPact = [...]int{
 
-	23, -1000, -3, 6, -8, -1000, -1000, 4, -1000, -1000,
-	21, 21, 23, 21, 21, 21, 19, -1000, -1000, -8,
-	19, -8, -3, -1000, -1000, -1000, -3, -1000,
+	3, -1000, -1000, -4, -1000, 15, -1000, 14, -1, 26,
+	-1000, -1000, -1000, 3, 28, 28, 6, 28, 28, 1,
+	31, -1000, -1000, -1000, -1000, -1, 31, -1, 28, -1000,
+	-1000, -1000, -1000, 15,
 }
 var yyPgo = [...]int{
 
-	0, 31, 2, 11, 5, 0, 30, 1, 16,
+	0, 40, 1, 3, 5, 0, 2, 39, 38, 14,
+	29,
 }
 var yyR1 = [...]int{
 
-	0, 1, 1, 8, 8, 7, 2, 2, 2, 3,
-	3, 3, 4, 4, 6, 6, 5, 5,
+	0, 1, 1, 10, 10, 9, 6, 6, 2, 2,
+	2, 3, 3, 3, 4, 4, 8, 8, 5, 5,
+	7,
 }
 var yyR2 = [...]int{
 
-	0, 1, 3, 3, 1, 3, 1, 3, 3, 1,
-	3, 3, 1, 2, 2, 1, 1, 1,
+	0, 1, 3, 3, 1, 3, 1, 1, 1, 3,
+	3, 1, 3, 3, 1, 2, 2, 1, 1, 1,
+	4,
 }
 var yyChk = [...]int{
 
-	-1000, -1, -2, -8, -3, -7, -4, 6, -5, 5,
-	9, 10, 7, 11, 12, 8, -6, -5, 6, -3,
-	6, -3, -2, -7, -4, -4, -2, -5,
+	-1000, -1, -6, -10, -7, -2, -9, 14, -3, 6,
+	-4, -5, 5, 8, 10, 11, 6, 12, 13, 9,
+	-8, -5, 6, -6, -9, -3, 6, -3, 7, -4,
+	-4, -6, -5, -2,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 0, 6, 4, 9, 17, 12, 16,
-	0, 0, 0, 0, 0, 0, 13, 15, 17, 7,
-	17, 8, 2, 3, 10, 11, 5, 14,
+	0, -2, 1, 0, 6, 7, 4, 0, 8, 19,
+	11, 14, 18, 0, 0, 0, 0, 0, 0, 0,
+	15, 17, 19, 2, 3, 9, 19, 10, 0, 12,
+	13, 5, 16, 20,
 }
 var yyTok1 = [...]int{
 
@@ -102,13 +112,16 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 11, 9, 3, 10, 3, 12, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 7,
-	3, 8,
+	3, 3, 12, 10, 3, 11, 3, 13, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 8,
+	3, 9, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 14,
 }
 var yyTok2 = [...]int{
 
-	2, 3, 4, 5, 6,
+	2, 3, 4, 5, 6, 7,
 }
 var yyTok3 = [...]int{
 	0,
@@ -494,70 +507,88 @@ yydefault:
 			yyVAL.expr = yyDollar[1].expr
 		}
 	case 7:
-		yyDollar = yyS[yypt-3 : yypt+1]
+		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:69
 		{
-			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+			yyVAL.expr = yyDollar[1].expr
 		}
 	case 8:
-		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:73
-		{
-			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: yyDollar[3].expr}
-		}
-	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:79
+		//line parser.y:75
 		{
 			yyVAL.expr = yyDollar[1].expr
+		}
+	case 9:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:79
+		{
+			yyVAL.expr = &ast.Add{X: yyDollar[1].expr, Y: yyDollar[3].expr}
 		}
 	case 10:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:83
 		{
-			yyVAL.expr = &ast.Mul{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+			yyVAL.expr = &ast.Sub{X: yyDollar[1].expr, Y: yyDollar[3].expr}
 		}
 	case 11:
-		yyDollar = yyS[yypt-3 : yypt+1]
-		//line parser.y:87
-		{
-			yyVAL.expr = &ast.Div{X: yyDollar[1].expr, Y: yyDollar[3].expr}
-		}
-	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:93
+		//line parser.y:89
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
+	case 12:
+		yyDollar = yyS[yypt-3 : yypt+1]
+		//line parser.y:93
+		{
+			yyVAL.expr = &ast.Mul{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
 	case 13:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:97
+		{
+			yyVAL.expr = &ast.Div{X: yyDollar[1].expr, Y: yyDollar[3].expr}
+		}
+	case 14:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:103
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 15:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		//line parser.y:107
 		{
 			yyVAL.expr = &ast.App{FnName: yyDollar[1].token, Args: yyDollar[2].exprs}
 		}
-	case 14:
-		yyDollar = yyS[yypt-2 : yypt+1]
-		//line parser.y:103
-		{
-			yyVAL.exprs = append(yyDollar[1].exprs, yyDollar[2].expr)
-		}
-	case 15:
-		yyDollar = yyS[yypt-1 : yypt+1]
-		//line parser.y:107
-		{
-			yyVAL.exprs = []ast.Expr{yyDollar[1].expr}
-		}
 	case 16:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-2 : yypt+1]
 		//line parser.y:113
 		{
-			yyVAL.expr = &ast.Int{X: yyDollar[1].token}
+			yyVAL.exprs = append(yyDollar[1].exprs, yyDollar[2].expr)
 		}
 	case 17:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		//line parser.y:117
 		{
+			yyVAL.exprs = []ast.Expr{yyDollar[1].expr}
+		}
+	case 18:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:123
+		{
+			yyVAL.expr = &ast.Int{X: yyDollar[1].token}
+		}
+	case 19:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		//line parser.y:127
+		{
 			yyVAL.expr = &ast.Ident{Name: yyDollar[1].token}
+		}
+	case 20:
+		yyDollar = yyS[yypt-4 : yypt+1]
+		//line parser.y:133
+		{
+			yyVAL.expr = &ast.Abs{Param: yyDollar[2].token, Body: yyDollar[4].expr}
 		}
 	}
 	goto yystack /* stack new state and value */

@@ -66,3 +66,10 @@ type App struct {
 }
 
 func (x *App) expr() {}
+
+type Abs struct {
+	Param token.Token
+	Body  Expr
+}
+
+func (x *Abs) expr() {}
