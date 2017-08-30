@@ -11,6 +11,8 @@ import (
 	"github.com/elpinal/gec/token"
 
 	"llvm.org/llvm/bindings/go/llvm"
+
+	"github.com/elpinal/types-go"
 )
 
 func main() {
@@ -35,7 +37,7 @@ func main() {
 type Builder struct {
 	llvm.Builder
 	module llvm.Module
-	env    map[string]llvm.Value
+	env    map[string]Value
 	decls  map[string]ast.Decl
 	refers map[string][]string
 	entry  llvm.BasicBlock
@@ -44,7 +46,7 @@ type Builder struct {
 func newBuilder(lb llvm.Builder) *Builder {
 	return &Builder{
 		Builder: lb,
-		env:     make(map[string]llvm.Value),
+		env:     make(map[string]Value),
 		decls:   make(map[string]ast.Decl),
 		refers:  make(map[string][]string),
 	}
@@ -73,7 +75,7 @@ func run(input []byte, logFile *string) error {
 		return err
 	}
 
-	builder.CreateRet(a)
+	builder.CreateRet(a.v)
 
 	if err := llvm.VerifyModule(builder.module, llvm.ReturnStatusAction); err != nil {
 		return err
@@ -102,25 +104,25 @@ func (b *Builder) reserve(wd *ast.WithDecls) (ast.Expr, error) {
 	return wd.Expr, nil
 }
 
-func (b *Builder) resolve(tok token.Token) (llvm.Value, error) {
+func (b *Builder) resolve(tok token.Token) (Value, error) {
 	decl, found := b.decls[tok.Lit]
 	if !found {
-		return llvm.Value{}, fmt.Errorf("%v: unknown name: %q", tok.Position, tok.Lit)
+		return Value{}, fmt.Errorf("%v: unknown name: %q", tok.Position, tok.Lit)
 	}
 	t, err := b.genDecl(decl)
 	if err != nil {
-		return llvm.Value{}, err
+		return Value{}, err
 	}
 	b.env[tok.Lit] = t
 	return t, nil
 }
 
-func (b *Builder) genDecl(decl ast.Decl) (llvm.Value, error) {
+func (b *Builder) genDecl(decl ast.Decl) (Value, error) {
 	switch x := decl.(type) {
 	case *ast.Assign:
 		v, err := b.gen(x.RHS, x.LHS.Lit)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
 		return v, nil
 	case *ast.DeclFunc:
@@ -136,22 +138,22 @@ func (b *Builder) genDecl(decl ast.Decl) (llvm.Value, error) {
 		block := llvm.AddBasicBlock(v, "entry")
 		b.SetInsertPointAtEnd(block)
 
-		topEnv := make(map[string]llvm.Value, len(b.env))
+		topEnv := make(map[string]Value, len(b.env))
 		for k, v := range b.env {
 			topEnv[k] = v
 		}
 		for i, name := range x.Args {
-			b.env[name.Lit] = v.Param(i)
+			b.env[name.Lit] = Value{v: v.Param(i)}
 		}
 		ret, err := b.gen(x.RHS, x.Name.Lit)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
-		b.CreateRet(ret)
+		b.CreateRet(ret.v)
 		b.env = topEnv
 
 		b.SetInsertPointAtEnd(b.entry)
-		return v, nil
+		return Value{v: v}, nil
 	}
 	panic("unreachable")
 }
@@ -169,23 +171,28 @@ func (b *Builder) checkCR(name, referredFrom string) error {
 	return nil
 }
 
-func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
+type Value struct {
+	v llvm.Value
+	t types.Type
+}
+
+func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 	switch x := expr.(type) {
 	case *ast.Ident:
 		if x.Name.Lit == referredFrom {
-			return llvm.Value{}, fmt.Errorf("%v: self-reference: %q", x.Name.Position, x.Name.Lit)
+			return Value{}, fmt.Errorf("%v: self-reference: %q", x.Name.Position, x.Name.Lit)
 		}
 		// Note that there is possibility of duplication.
 		b.refers[referredFrom] = append(b.refers[referredFrom], x.Name.Lit)
 		err := b.checkCR(x.Name.Lit, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
 		t, found := b.env[x.Name.Lit]
 		if !found {
 			t, err = b.resolve(x.Name)
 			if err != nil {
-				return llvm.Value{}, err
+				return Value{}, err
 			}
 		}
 		return t, nil
@@ -195,63 +202,64 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (llvm.Value, error) {
 		if !found {
 			t, err = b.resolve(x.FnName)
 			if err != nil {
-				return llvm.Value{}, err
+				return Value{}, err
 			}
 		}
 		args := make([]llvm.Value, len(x.Args))
 		for i, arg := range x.Args {
-			args[i], err = b.gen(arg, referredFrom)
+			v, err := b.gen(arg, referredFrom)
 			if err != nil {
-				return llvm.Value{}, err
+				return Value{}, err
 			}
+			args[i] = v.v
 		}
-		return b.CreateCall(t, args, "call"), nil
+		return Value{v: b.CreateCall(t.v, args, "call")}, nil
 	case *ast.Int:
 		n, err := strconv.Atoi(x.X.Lit)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
-		return llvm.ConstInt(llvm.Int32Type(), uint64(n), false), nil
+		return Value{v: llvm.ConstInt(llvm.Int32Type(), uint64(n), false)}, nil
 	case *ast.Add:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
 		v2, err := b.gen(x.Y, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
-		return b.CreateAdd(v1, v2, "add"), nil
+		return Value{v: b.CreateAdd(v1.v, v2.v, "add")}, nil
 	case *ast.Sub:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
 		v2, err := b.gen(x.Y, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
-		return b.CreateSub(v1, v2, "sub"), nil
+		return Value{v: b.CreateSub(v1.v, v2.v, "sub")}, nil
 	case *ast.Mul:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
 		v2, err := b.gen(x.Y, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
-		return b.CreateMul(v1, v2, "mul"), nil
+		return Value{v: b.CreateMul(v1.v, v2.v, "mul")}, nil
 	case *ast.Div:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
 		v2, err := b.gen(x.Y, referredFrom)
 		if err != nil {
-			return llvm.Value{}, err
+			return Value{}, err
 		}
-		return b.CreateUDiv(v1, v2, "div"), nil
+		return Value{v: b.CreateUDiv(v1.v, v2.v, "div")}, nil
 	}
 	panic("unreachable")
 }
