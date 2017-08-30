@@ -10,6 +10,8 @@ import (
 	"github.com/elpinal/gec/ast"
 	"github.com/elpinal/gec/token"
 
+	"github.com/k0kubun/pp"
+
 	"llvm.org/llvm/bindings/go/llvm"
 
 	"github.com/elpinal/types-go"
@@ -37,7 +39,7 @@ func main() {
 type Builder struct {
 	llvm.Builder
 	module llvm.Module
-	env    map[string]Value
+	env    map[string]types.Expr
 	decls  map[string]*ast.Decl
 	refers map[string][]string
 	entry  llvm.BasicBlock
@@ -46,7 +48,7 @@ type Builder struct {
 func newBuilder(lb llvm.Builder) *Builder {
 	return &Builder{
 		Builder: lb,
-		env:     make(map[string]Value),
+		env:     make(map[string]types.Expr),
 		decls:   make(map[string]*ast.Decl),
 		refers:  make(map[string][]string),
 	}
@@ -70,12 +72,27 @@ func run(input []byte, logFile *string) error {
 	if err != nil {
 		return err
 	}
-	a, err := builder.gen(expr, "")
+	a, err := builder.genIR(expr, "")
 	if err != nil {
 		return err
 	}
 
-	builder.CreateRet(a.v)
+	pp.Println(a)
+	v, err := builder.gen(a)
+	if err != nil {
+		return err
+	}
+	ti := types.TI{}
+	t, err := ti.TypeInference(types.TypeEnv{}, a)
+	if err != nil {
+		return err
+	}
+	switch t.(type) {
+	case *types.TInt:
+	default:
+		return fmt.Errorf("expected int, got %v", t)
+	}
+	builder.CreateRet(v)
 
 	if err := llvm.VerifyModule(builder.module, llvm.ReturnStatusAction); err != nil {
 		return err
@@ -104,23 +121,23 @@ func (b *Builder) reserve(wd *ast.WithDecls) (ast.Expr, error) {
 	return wd.Expr, nil
 }
 
-func (b *Builder) resolve(tok token.Token) (Value, error) {
+func (b *Builder) resolve(tok token.Token) (types.Expr, error) {
 	decl, found := b.decls[tok.Lit]
 	if !found {
-		return Value{}, fmt.Errorf("%v: unknown name: %q", tok.Position, tok.Lit)
+		return nil, fmt.Errorf("%v: unknown name: %q", tok.Position, tok.Lit)
 	}
 	t, err := b.genDecl(decl)
 	if err != nil {
-		return Value{}, err
+		return nil, err
 	}
 	b.env[tok.Lit] = t
 	return t, nil
 }
 
-func (b *Builder) genDecl(decl *ast.Decl) (Value, error) {
-	v, err := b.gen(decl.RHS, decl.LHS.Lit)
+func (b *Builder) genDecl(decl *ast.Decl) (types.Expr, error) {
+	v, err := b.genIR(decl.RHS, decl.LHS.Lit)
 	if err != nil {
-		return Value{}, err
+		return nil, err
 	}
 	return v, nil
 }
@@ -143,105 +160,138 @@ type Value struct {
 	t types.Type
 }
 
-func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
+func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) {
 	switch x := expr.(type) {
 	case *ast.Ident:
 		if x.Name.Lit == referredFrom {
-			return Value{}, fmt.Errorf("%v: self-reference: %q", x.Name.Position, x.Name.Lit)
+			return nil, fmt.Errorf("%v: self-reference: %q", x.Name.Position, x.Name.Lit)
 		}
 		// Note that there is possibility of duplication.
 		b.refers[referredFrom] = append(b.refers[referredFrom], x.Name.Lit)
 		err := b.checkCR(x.Name.Lit, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
 		t, found := b.env[x.Name.Lit]
 		if !found {
 			t, err = b.resolve(x.Name)
 			if err != nil {
-				return Value{}, err
+				return nil, err
 			}
 		}
 		return t, nil
 	case *ast.App:
-		var err error
-		t, found := b.env[x.FnName.Lit]
-		if !found {
-			t, err = b.resolve(x.FnName)
-			if err != nil {
-				return Value{}, err
-			}
+		e1, err := b.genIR(x.Fn, referredFrom)
+		if err != nil {
+			return nil, err
 		}
-		args := make([]llvm.Value, len(x.Args))
-		for i, arg := range x.Args {
-			v, err := b.gen(arg, referredFrom)
-			if err != nil {
-				return Value{}, err
-			}
-			args[i] = v.v
+		e2, err := b.genIR(x.Arg, referredFrom)
+		if err != nil {
+			return nil, err
 		}
-		return Value{v: b.CreateCall(t.v, args, "call")}, nil
+		return &types.EApp{e1, e2}, nil
+	case *ast.Abs:
+		e, err := b.genIR(x.Body, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		return &types.EAbs{x.Param.Lit, e}, nil
 	case *ast.Int:
 		n, err := strconv.Atoi(x.X.Lit)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		return Value{
-			v: llvm.ConstInt(llvm.Int32Type(), uint64(n), false),
-			t: &types.TInt{},
-		}, nil
+		return &types.EInt{n}, nil
 	case *ast.Add:
-		v1, err := b.gen(x.X, referredFrom)
+		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		v2, err := b.gen(x.Y, referredFrom)
+		e2, err := b.genIR(x.Y, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		return Value{
-			v: b.CreateAdd(v1.v, v2.v, "add"),
-			t: &types.TInt{},
-		}, nil
+		return &ArithBinOp{EAdd, e1, e2}, nil
 	case *ast.Sub:
-		v1, err := b.gen(x.X, referredFrom)
+		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		v2, err := b.gen(x.Y, referredFrom)
+		e2, err := b.genIR(x.Y, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		return Value{
-			v: b.CreateSub(v1.v, v2.v, "sub"),
-			t: &types.TInt{},
-		}, nil
+		return &ArithBinOp{ESub, e1, e2}, nil
 	case *ast.Mul:
-		v1, err := b.gen(x.X, referredFrom)
+		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		v2, err := b.gen(x.Y, referredFrom)
+		e2, err := b.genIR(x.Y, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		return Value{
-			v: b.CreateMul(v1.v, v2.v, "mul"),
-			t: &types.TInt{},
-		}, nil
+		return &ArithBinOp{EMul, e1, e2}, nil
 	case *ast.Div:
-		v1, err := b.gen(x.X, referredFrom)
+		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		v2, err := b.gen(x.Y, referredFrom)
+		e2, err := b.genIR(x.Y, referredFrom)
 		if err != nil {
-			return Value{}, err
+			return nil, err
 		}
-		return Value{
-			v: b.CreateUDiv(v1.v, v2.v, "div"),
-			t: &types.TInt{},
-		}, nil
+		return &ArithBinOp{EDiv, e1, e2}, nil
 	}
-	return Value{}, fmt.Errorf("unknown expression: %v", expr)
+	return nil, fmt.Errorf("unknown expression: %v", expr)
+}
+
+func (b *Builder) gen(expr types.Expr) (llvm.Value, error) {
+	switch x := expr.(type) {
+	case *types.EApp:
+		ti := types.TI{}
+		t, err := ti.TypeInference(types.TypeEnv{}, x.Arg)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		f := llvm.FunctionType(
+			llvm.Int32Type(),
+			[]llvm.Type{llvmType(t)},
+			false,
+		)
+		v := llvm.AddFunction(b.module, "fun", f)
+		block := llvm.AddBasicBlock(v, "entry")
+		b.SetInsertPointAtEnd(block)
+
+		_, err = b.gen(x.Fn)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		arg, err := b.gen(x.Arg)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		return b.CreateCall(v, []llvm.Value{arg}, "call"), nil
+	case *types.EAbs:
+		a, err := b.gen(x.Body)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+
+		b.CreateRet(a)
+		b.SetInsertPointAtEnd(b.entry)
+		return llvm.Value{}, err
+	case *types.EInt:
+		return llvm.ConstInt(llvm.Int32Type(), uint64(x.Value), false), nil
+	}
+	return llvm.Value{}, fmt.Errorf("gen: unexpected type: %#v", expr)
+}
+
+func llvmType(t types.Type) llvm.Type {
+	switch t.(type) {
+	case *types.TInt:
+		return llvm.Int32Type()
+	}
+	panic(fmt.Sprintf("converting type to LLVM's one: unexpected error: %v", t))
 }

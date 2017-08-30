@@ -14,13 +14,11 @@ import (
         decl *ast.Decl
         decls []*ast.Decl
         expr ast.Expr
-        exprs []ast.Expr
         token token.Token
 }
 
 %type <top> top
 %type <expr> expr term factor atom absexpr abs
-%type <exprs> atoms
 %type <decl> decl
 %type <decls> decls
 
@@ -103,19 +101,9 @@ factor:
         {
                 $$ = $1
         }
-|	IDENT atoms
+|	factor atom
         {
-                $$ = &ast.App{FnName: $1, Args: $2}
-        }
-
-atoms:
-        atoms atom
-        {
-                $$ = append($1, $2)
-        }
-|	atom
-        {
-                $$ = []ast.Expr{$1}
+                $$ = &ast.App{Fn: $1, Arg: $2}
         }
 
 atom:

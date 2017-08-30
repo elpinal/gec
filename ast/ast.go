@@ -61,8 +61,8 @@ func (x *Decl) Pos() token.Position {
 }
 
 type App struct {
-	FnName token.Token
-	Args   []Expr
+	Fn  Expr
+	Arg Expr
 }
 
 func (x *App) expr() {}
