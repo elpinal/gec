@@ -43,40 +43,21 @@ type Ident struct {
 func (x *Ident) expr() {}
 
 type WithDecls struct {
-	Decls []Decl
+	Decls []*Decl
 	Expr  Expr
 }
 
-type Decl interface {
-	LName() string
-	Pos() token.Position
-}
-
-type Assign struct {
+type Decl struct {
 	LHS token.Token
 	RHS Expr
 }
 
-func (x *Assign) LName() string {
+func (x *Decl) LName() string {
 	return x.LHS.Lit
 }
 
-func (x *Assign) Pos() token.Position {
+func (x *Decl) Pos() token.Position {
 	return token.NewPosition(x.LHS.Line, x.LHS.Column)
-}
-
-type DeclFunc struct {
-	Name token.Token
-	Args []token.Token
-	RHS  Expr
-}
-
-func (x *DeclFunc) LName() string {
-	return x.Name.Lit
-}
-
-func (x *DeclFunc) Pos() token.Position {
-	return token.NewPosition(x.Name.Line, x.Name.Column)
 }
 
 type App struct {

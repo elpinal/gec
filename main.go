@@ -38,7 +38,7 @@ type Builder struct {
 	llvm.Builder
 	module llvm.Module
 	env    map[string]Value
-	decls  map[string]ast.Decl
+	decls  map[string]*ast.Decl
 	refers map[string][]string
 	entry  llvm.BasicBlock
 }
@@ -47,7 +47,7 @@ func newBuilder(lb llvm.Builder) *Builder {
 	return &Builder{
 		Builder: lb,
 		env:     make(map[string]Value),
-		decls:   make(map[string]ast.Decl),
+		decls:   make(map[string]*ast.Decl),
 		refers:  make(map[string][]string),
 	}
 }
@@ -117,45 +117,12 @@ func (b *Builder) resolve(tok token.Token) (Value, error) {
 	return t, nil
 }
 
-func (b *Builder) genDecl(decl ast.Decl) (Value, error) {
-	switch x := decl.(type) {
-	case *ast.Assign:
-		v, err := b.gen(x.RHS, x.LHS.Lit)
-		if err != nil {
-			return Value{}, err
-		}
-		return v, nil
-	case *ast.DeclFunc:
-		params := make([]llvm.Type, len(x.Args))
-		for i := range x.Args {
-			params[i] = llvm.Int32Type()
-		}
-		f := llvm.FunctionType(llvm.Int32Type(), params, false)
-		v := llvm.AddFunction(b.module, x.Name.Lit, f)
-		for i, name := range x.Args {
-			v.Param(i).SetName(name.Lit)
-		}
-		block := llvm.AddBasicBlock(v, "entry")
-		b.SetInsertPointAtEnd(block)
-
-		topEnv := make(map[string]Value, len(b.env))
-		for k, v := range b.env {
-			topEnv[k] = v
-		}
-		for i, name := range x.Args {
-			b.env[name.Lit] = Value{v: v.Param(i)}
-		}
-		ret, err := b.gen(x.RHS, x.Name.Lit)
-		if err != nil {
-			return Value{}, err
-		}
-		b.CreateRet(ret.v)
-		b.env = topEnv
-
-		b.SetInsertPointAtEnd(b.entry)
-		return Value{v: v}, nil
+func (b *Builder) genDecl(decl *ast.Decl) (Value, error) {
+	v, err := b.gen(decl.RHS, decl.LHS.Lit)
+	if err != nil {
+		return Value{}, err
 	}
-	panic("unreachable")
+	return v, nil
 }
 
 func (b *Builder) checkCR(name, referredFrom string) error {
@@ -219,7 +186,10 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
-		return Value{v: llvm.ConstInt(llvm.Int32Type(), uint64(n), false)}, nil
+		return Value{
+			v: llvm.ConstInt(llvm.Int32Type(), uint64(n), false),
+			t: &types.TInt{},
+		}, nil
 	case *ast.Add:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
@@ -229,7 +199,10 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
-		return Value{v: b.CreateAdd(v1.v, v2.v, "add")}, nil
+		return Value{
+			v: b.CreateAdd(v1.v, v2.v, "add"),
+			t: &types.TInt{},
+		}, nil
 	case *ast.Sub:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
@@ -239,7 +212,10 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
-		return Value{v: b.CreateSub(v1.v, v2.v, "sub")}, nil
+		return Value{
+			v: b.CreateSub(v1.v, v2.v, "sub"),
+			t: &types.TInt{},
+		}, nil
 	case *ast.Mul:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
@@ -249,7 +225,10 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
-		return Value{v: b.CreateMul(v1.v, v2.v, "mul")}, nil
+		return Value{
+			v: b.CreateMul(v1.v, v2.v, "mul"),
+			t: &types.TInt{},
+		}, nil
 	case *ast.Div:
 		v1, err := b.gen(x.X, referredFrom)
 		if err != nil {
@@ -259,7 +238,10 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
-		return Value{v: b.CreateUDiv(v1.v, v2.v, "div")}, nil
+		return Value{
+			v: b.CreateUDiv(v1.v, v2.v, "div"),
+			t: &types.TInt{},
+		}, nil
 	}
 	panic("unreachable")
 }

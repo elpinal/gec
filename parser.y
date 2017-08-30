@@ -11,12 +11,11 @@ import (
 
 %union {
         top *ast.WithDecls
-        decl ast.Decl
-        decls []ast.Decl
+        decl *ast.Decl
+        decls []*ast.Decl
         expr ast.Expr
         exprs []ast.Expr
         token token.Token
-        args []token.Token
 }
 
 %type <top> top
@@ -24,7 +23,6 @@ import (
 %type <exprs> atoms
 %type <decl> decl
 %type <decls> decls
-%type <args> args
 
 %token <token> ILLEGAL NUM IDENT
 
@@ -53,27 +51,13 @@ decls:
         }
 |       decl
         {
-                $$ = []ast.Decl{$1}
+                $$ = []*ast.Decl{$1}
         }
 
 decl:
         IDENT '=' expr
         {
-                $$ = &ast.Assign{LHS: $1, RHS: $3}
-        }
-|	IDENT args '=' expr
-        {
-                $$ = &ast.DeclFunc{Name: $1, Args: $2, RHS: $4}
-        }
-
-args:
-        IDENT
-        {
-                $$ = []token.Token{$1}
-        }
-|	args IDENT
-        {
-                $$ = append($1, $2)
+                $$ = &ast.Decl{LHS: $1, RHS: $3}
         }
 
 expr:
