@@ -280,6 +280,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 			false,
 		)
 		v := llvm.AddFunction(b.module, "fun", f)
+		v.Param(0).SetName(x.Param)
 		block := llvm.AddBasicBlock(v, "entry")
 		b.SetInsertPointAtEnd(block)
 
