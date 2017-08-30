@@ -294,6 +294,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 
 		b.CreateRet(a)
 		b.SetInsertPointAtEnd(prevEntry)
+		b.entry = prevEntry
 		return v, err
 	case *types.EInt:
 		return llvm.ConstInt(llvm.Int32Type(), uint64(x.Value), false), nil
