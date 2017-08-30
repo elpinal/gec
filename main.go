@@ -200,6 +200,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
+		delete(b.env, x.Param.Lit)
 		if ok {
 			b.env[x.Param.Lit] = o
 		}
