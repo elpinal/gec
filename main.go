@@ -300,17 +300,23 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		}
 		return v, nil
 	case *types.EArithBinOp:
+		v1, err := b.gen(x.E1, &types.TInt{})
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		v2, err := b.gen(x.E2, &types.TInt{})
+		if err != nil {
+			return llvm.Value{}, err
+		}
 		switch x.Op {
 		case types.Add:
-			v1, err := b.gen(x.E1, &types.TInt{})
-			if err != nil {
-				return llvm.Value{}, err
-			}
-			v2, err := b.gen(x.E2, &types.TInt{})
-			if err != nil {
-				return llvm.Value{}, err
-			}
 			return b.CreateAdd(v1, v2, "add"), nil
+		case types.Sub:
+			return b.CreateSub(v1, v2, "sub"), nil
+		case types.Mul:
+			return b.CreateMul(v1, v2, "mul"), nil
+		case types.Div:
+			return b.CreateUDiv(v1, v2, "div"), nil
 		}
 	}
 	return llvm.Value{}, fmt.Errorf("LLVM IR generation: unexpected expression: %#v", expr)
