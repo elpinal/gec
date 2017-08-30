@@ -243,5 +243,5 @@ func (b *Builder) gen(expr ast.Expr, referredFrom string) (Value, error) {
 			t: &types.TInt{},
 		}, nil
 	}
-	panic("unreachable")
+	return Value{}, fmt.Errorf("unknown expression: %v", expr)
 }
