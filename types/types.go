@@ -136,10 +136,18 @@ type EIf struct {
 	E2   Expr
 }
 
-type EEq struct {
+type ECmp struct {
+	Op CmpOp
 	E1 Expr
 	E2 Expr
 }
+
+type CmpOp int
+
+const (
+	InvalidCmpOp CmpOp = iota
+	Eq
+)
 
 type EArithBinOp struct {
 	Op BinOp
@@ -165,7 +173,7 @@ func (e *EAbs) Expr()        {}
 func (e *ELet) Expr()        {}
 func (e *EIf) Expr()         {}
 func (a *EArithBinOp) Expr() {}
-func (a *EEq) Expr() {}
+func (a *ECmp) Expr()        {}
 
 type Subst map[string]Type
 
@@ -417,7 +425,7 @@ func (ti *TI) ti(env TypeEnv, expr Expr) (Subst, Type, error) {
 		}
 		s := s4.compose(s3).compose(s2).compose(s1)
 		return s, &TInt{}, nil
-	case *EEq:
+	case *ECmp:
 		s1, t1, err := ti.ti(env, e.E1)
 		if err != nil {
 			return nil, nil, err

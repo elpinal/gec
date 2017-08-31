@@ -282,7 +282,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
-		return &types.EEq{e1, e2}, nil
+		return &types.ECmp{types.Eq, e1, e2}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }
@@ -392,7 +392,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		phi := b.CreatePHI(llvmType(expected), "phi")
 		phi.AddIncoming([]llvm.Value{v1, v2}, []llvm.BasicBlock{b1, b2})
 		return phi, nil
-	case *types.EEq:
+	case *types.ECmp:
 		ti := types.TI{}
 		t, err := ti.TypeInference(types.TypeEnv{}, x.E1)
 		if err != nil {
