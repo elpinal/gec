@@ -87,3 +87,10 @@ type If struct {
 }
 
 func (x *If) expr() {}
+
+type Eq struct {
+	LHS Expr
+	RHS Expr
+}
+
+func (x *Eq) expr() {}

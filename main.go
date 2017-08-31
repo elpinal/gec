@@ -273,6 +273,16 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, err
 		}
 		return &types.EIf{cond, e1, e2}, nil
+	case *ast.Eq:
+		e1, err := b.genIR(x.LHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		e2, err := b.genIR(x.RHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		return &types.EEq{e1, e2}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }
@@ -382,6 +392,25 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		phi := b.CreatePHI(llvmType(expected), "phi")
 		phi.AddIncoming([]llvm.Value{v1, v2}, []llvm.BasicBlock{b1, b2})
 		return phi, nil
+	case *types.EEq:
+		ti := types.TI{}
+		t, err := ti.TypeInference(types.TypeEnv{}, x.E1)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		lhs, err := b.gen(x.E1, t)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		rhs, err := b.gen(x.E2, t)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		switch t.(type) {
+		case *types.TInt:
+			return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
+		}
+		return llvm.Value{}, fmt.Errorf("unsupported comparison: %#v", expr)
 	}
 	return llvm.Value{}, fmt.Errorf("LLVM IR generation: unexpected expression: %#v", expr)
 }

@@ -136,6 +136,11 @@ type EIf struct {
 	E2   Expr
 }
 
+type EEq struct {
+	E1 Expr
+	E2 Expr
+}
+
 type EArithBinOp struct {
 	Op BinOp
 	E1 Expr
@@ -160,6 +165,7 @@ func (e *EAbs) Expr()        {}
 func (e *ELet) Expr()        {}
 func (e *EIf) Expr()         {}
 func (a *EArithBinOp) Expr() {}
+func (a *EEq) Expr() {}
 
 type Subst map[string]Type
 
@@ -411,6 +417,21 @@ func (ti *TI) ti(env TypeEnv, expr Expr) (Subst, Type, error) {
 		}
 		s := s4.compose(s3).compose(s2).compose(s1)
 		return s, &TInt{}, nil
+	case *EEq:
+		s1, t1, err := ti.ti(env, e.E1)
+		if err != nil {
+			return nil, nil, err
+		}
+		s2, t2, err := ti.ti(env.apply(s1).(TypeEnv), e.E2)
+		if err != nil {
+			return nil, nil, err
+		}
+		s3, err := ti.mgu(t1.apply(s2).(Type), t2.apply(s2).(Type))
+		if err != nil {
+			return nil, nil, err
+		}
+		s := s3.compose(s2).compose(s1)
+		return s, &TBool{}, nil
 	}
 	panic("unreachable")
 }

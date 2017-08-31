@@ -18,11 +18,11 @@ import (
 }
 
 %type <top> top
-%type <expr> expr term factor atom absexpr abs
+%type <expr> expr term factor atom absexpr abs eqexpr
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NUM IDENT RARROW BOOL IF THEN ELSE
+%token <token> ILLEGAL NUM IDENT RARROW BOOL IF THEN ELSE EQ
 
 %%
 
@@ -63,13 +63,20 @@ absexpr:
         {
                 $$ = $1
         }
-|	expr
+|	eqexpr
         {
                 $$ = $1
         }
-|	IF expr THEN expr ELSE expr
+|	IF eqexpr THEN eqexpr ELSE eqexpr
         {
                 $$ = &ast.If{Cond: $2, E1: $4, E2: $6}
+        }
+
+eqexpr:
+        expr
+|	expr EQ expr
+        {
+                $$ = &ast.Eq{LHS: $1, RHS: $3}
         }
 
 expr:

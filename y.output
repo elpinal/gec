@@ -2,20 +2,21 @@
 state 0
 	$accept: .top $end 
 
-	NUM  shift 13
+	NUM  shift 14
 	IDENT  shift 10
-	BOOL  shift 14
+	BOOL  shift 15
 	IF  shift 6
 	'\\'  shift 8
 	.  error
 
 	top  goto 1
-	expr  goto 5
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
 	absexpr  goto 2
 	abs  goto 4
+	eqexpr  goto 5
 	decl  goto 7
 	decls  goto 3
 
@@ -36,7 +37,7 @@ state 3
 	top:  decls.';' absexpr 
 	decls:  decls.';' decl 
 
-	';'  shift 15
+	';'  shift 16
 	.  error
 
 
@@ -47,27 +48,24 @@ state 4
 
 
 state 5
-	absexpr:  expr.    (7)
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
+	absexpr:  eqexpr.    (7)
 
-	'+'  shift 16
-	'-'  shift 17
 	.  reduce 7 (src line 66)
 
 
 state 6
-	absexpr:  IF.expr THEN expr ELSE expr 
+	absexpr:  IF.eqexpr THEN eqexpr ELSE eqexpr 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
 	.  error
 
-	expr  goto 18
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+	eqexpr  goto 17
 
 state 7
 	decls:  decl.    (4)
@@ -78,308 +76,336 @@ state 7
 state 8
 	abs:  '\\'.IDENT RARROW absexpr 
 
-	IDENT  shift 20
+	IDENT  shift 19
 	.  error
 
 
 state 9
-	expr:  term.    (9)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	eqexpr:  expr.    (9)
+	eqexpr:  expr.EQ expr 
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
 
-	'*'  shift 21
-	'/'  shift 22
+	EQ  shift 20
+	'+'  shift 21
+	'-'  shift 22
 	.  reduce 9 (src line 75)
 
 
 state 10
 	decl:  IDENT.'=' absexpr 
-	atom:  IDENT.    (18)
+	atom:  IDENT.    (20)
 
 	'='  shift 23
-	.  reduce 18 (src line 118)
+	.  reduce 20 (src line 125)
 
 
 state 11
-	term:  factor.    (12)
-	factor:  factor.atom 
+	expr:  term.    (11)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
-	.  reduce 12 (src line 89)
+	'*'  shift 24
+	'/'  shift 25
+	.  reduce 11 (src line 82)
 
-	atom  goto 24
 
 state 12
-	factor:  atom.    (15)
+	term:  factor.    (14)
+	factor:  factor.atom 
 
-	.  reduce 15 (src line 103)
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  reduce 14 (src line 96)
 
+	atom  goto 26
 
 state 13
-	atom:  NUM.    (17)
+	factor:  atom.    (17)
 
-	.  reduce 17 (src line 113)
+	.  reduce 17 (src line 110)
 
 
 state 14
-	atom:  BOOL.    (19)
+	atom:  NUM.    (19)
 
-	.  reduce 19 (src line 122)
+	.  reduce 19 (src line 120)
 
 
 state 15
+	atom:  BOOL.    (21)
+
+	.  reduce 21 (src line 129)
+
+
+state 16
 	top:  decls ';'.absexpr 
 	decls:  decls ';'.decl 
 
-	NUM  shift 13
+	NUM  shift 14
 	IDENT  shift 10
-	BOOL  shift 14
+	BOOL  shift 15
 	IF  shift 6
 	'\\'  shift 8
 	.  error
 
-	expr  goto 5
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
-	absexpr  goto 25
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+	absexpr  goto 27
 	abs  goto 4
-	decl  goto 26
-
-state 16
-	expr:  expr '+'.term 
-
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
-	.  error
-
-	term  goto 27
-	factor  goto 11
-	atom  goto 12
+	eqexpr  goto 5
+	decl  goto 28
 
 state 17
-	expr:  expr '-'.term 
-
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
-	.  error
-
-	term  goto 28
-	factor  goto 11
-	atom  goto 12
-
-state 18
-	absexpr:  IF expr.THEN expr ELSE expr 
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
+	absexpr:  IF eqexpr.THEN eqexpr ELSE eqexpr 
 
 	THEN  shift 29
-	'+'  shift 16
-	'-'  shift 17
 	.  error
+
+
+state 18
+	atom:  IDENT.    (20)
+
+	.  reduce 20 (src line 125)
 
 
 state 19
-	atom:  IDENT.    (18)
-
-	.  reduce 18 (src line 118)
-
-
-state 20
 	abs:  '\\' IDENT.RARROW absexpr 
 
 	RARROW  shift 30
 	.  error
 
 
-state 21
-	term:  term '*'.factor 
+state 20
+	eqexpr:  expr EQ.expr 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
 	.  error
 
-	factor  goto 31
-	atom  goto 12
+	expr  goto 31
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+
+state 21
+	expr:  expr '+'.term 
+
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  error
+
+	term  goto 32
+	factor  goto 12
+	atom  goto 13
 
 state 22
-	term:  term '/'.factor 
+	expr:  expr '-'.term 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
 	.  error
 
-	factor  goto 32
-	atom  goto 12
+	term  goto 33
+	factor  goto 12
+	atom  goto 13
 
 state 23
 	decl:  IDENT '='.absexpr 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
 	IF  shift 6
 	'\\'  shift 8
 	.  error
 
-	expr  goto 5
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
-	absexpr  goto 33
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+	absexpr  goto 34
 	abs  goto 4
+	eqexpr  goto 5
 
 state 24
-	factor:  factor atom.    (16)
+	term:  term '*'.factor 
 
-	.  reduce 16 (src line 108)
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  error
 
+	factor  goto 35
+	atom  goto 13
 
 state 25
+	term:  term '/'.factor 
+
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  error
+
+	factor  goto 36
+	atom  goto 13
+
+state 26
+	factor:  factor atom.    (18)
+
+	.  reduce 18 (src line 115)
+
+
+state 27
 	top:  decls ';' absexpr.    (2)
 
 	.  reduce 2 (src line 37)
 
 
-state 26
+state 28
 	decls:  decls ';' decl.    (3)
 
 	.  reduce 3 (src line 45)
 
 
-state 27
-	expr:  expr '+' term.    (10)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
-
-	'*'  shift 21
-	'/'  shift 22
-	.  reduce 10 (src line 80)
-
-
-state 28
-	expr:  expr '-' term.    (11)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
-
-	'*'  shift 21
-	'/'  shift 22
-	.  reduce 11 (src line 84)
-
-
 state 29
-	absexpr:  IF expr THEN.expr ELSE expr 
+	absexpr:  IF eqexpr THEN.eqexpr ELSE eqexpr 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
 	.  error
 
-	expr  goto 34
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+	eqexpr  goto 37
 
 state 30
 	abs:  '\\' IDENT RARROW.absexpr 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
 	IF  shift 6
 	'\\'  shift 8
 	.  error
 
-	expr  goto 5
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
-	absexpr  goto 35
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+	absexpr  goto 38
 	abs  goto 4
+	eqexpr  goto 5
 
 state 31
-	term:  term '*' factor.    (13)
-	factor:  factor.atom 
+	eqexpr:  expr EQ expr.    (10)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
-	.  reduce 13 (src line 94)
+	'+'  shift 21
+	'-'  shift 22
+	.  reduce 10 (src line 77)
 
-	atom  goto 24
 
 state 32
-	term:  term '/' factor.    (14)
-	factor:  factor.atom 
+	expr:  expr '+' term.    (12)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
-	.  reduce 14 (src line 98)
+	'*'  shift 24
+	'/'  shift 25
+	.  reduce 12 (src line 87)
 
-	atom  goto 24
 
 state 33
+	expr:  expr '-' term.    (13)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
+
+	'*'  shift 24
+	'/'  shift 25
+	.  reduce 13 (src line 91)
+
+
+state 34
 	decl:  IDENT '=' absexpr.    (5)
 
 	.  reduce 5 (src line 55)
 
 
-state 34
-	absexpr:  IF expr THEN expr.ELSE expr 
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
-
-	ELSE  shift 36
-	'+'  shift 16
-	'-'  shift 17
-	.  error
-
-
 state 35
-	abs:  '\\' IDENT RARROW absexpr.    (20)
+	term:  term '*' factor.    (15)
+	factor:  factor.atom 
 
-	.  reduce 20 (src line 127)
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  reduce 15 (src line 101)
 
+	atom  goto 26
 
 state 36
-	absexpr:  IF expr THEN expr ELSE.expr 
+	term:  term '/' factor.    (16)
+	factor:  factor.atom 
 
-	NUM  shift 13
-	IDENT  shift 19
-	BOOL  shift 14
-	.  error
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  reduce 16 (src line 105)
 
-	expr  goto 37
-	term  goto 9
-	factor  goto 11
-	atom  goto 12
+	atom  goto 26
 
 state 37
-	absexpr:  IF expr THEN expr ELSE expr.    (8)
-	expr:  expr.'+' term 
-	expr:  expr.'-' term 
+	absexpr:  IF eqexpr THEN eqexpr.ELSE eqexpr 
 
-	'+'  shift 16
-	'-'  shift 17
+	ELSE  shift 39
+	.  error
+
+
+state 38
+	abs:  '\\' IDENT RARROW absexpr.    (22)
+
+	.  reduce 22 (src line 134)
+
+
+state 39
+	absexpr:  IF eqexpr THEN eqexpr ELSE.eqexpr 
+
+	NUM  shift 14
+	IDENT  shift 18
+	BOOL  shift 15
+	.  error
+
+	expr  goto 9
+	term  goto 11
+	factor  goto 12
+	atom  goto 13
+	eqexpr  goto 40
+
+state 40
+	absexpr:  IF eqexpr THEN eqexpr ELSE eqexpr.    (8)
+
 	.  reduce 8 (src line 70)
 
 
-18 terminals, 10 nonterminals
-21 grammar rules, 38/8000 states
+19 terminals, 11 nonterminals
+23 grammar rules, 41/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-59 working sets used
-memory: parser 50/120000
-27 extra closures
+60 working sets used
+memory: parser 66/120000
+30 extra closures
 70 shift entries, 1 exceptions
-23 goto entries
-30 entries saved by goto default
-Optimizer space used: output 52/120000
-52 table entries, 2 zero
-maximum spread: 18, maximum offset: 36
+25 goto entries
+39 entries saved by goto default
+Optimizer space used: output 56/120000
+56 table entries, 5 zero
+maximum spread: 19, maximum offset: 39
