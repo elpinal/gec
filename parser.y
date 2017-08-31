@@ -125,7 +125,7 @@ atom:
         }
 
 abs:
-        '\\' IDENT RARROW expr
+        '\\' IDENT RARROW absexpr
         {
                 $$ = &ast.Abs{Param: $2, Body: $4}
         }
