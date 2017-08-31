@@ -150,6 +150,8 @@ const (
 	NE
 	LT
 	GT
+	LE
+	GE
 )
 
 type EArithBinOp struct {

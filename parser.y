@@ -22,7 +22,7 @@ import (
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE
+%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE LE GE
 
 %%
 
@@ -101,6 +101,14 @@ cmpexpr:
 |	expr '>' expr
         {
                 $$ = &ast.Cmp{Op: ast.GT, LHS: $1, RHS: $3}
+        }
+|	expr LE expr
+        {
+                $$ = &ast.Cmp{Op: ast.LE, LHS: $1, RHS: $3}
+        }
+|	expr GE expr
+        {
+                $$ = &ast.Cmp{Op: ast.GE, LHS: $1, RHS: $3}
         }
 
 expr:

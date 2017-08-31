@@ -295,6 +295,10 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			op = types.LT
 		case ast.GT:
 			op = types.GT
+		case ast.LE:
+			op = types.LE
+		case ast.GE:
+			op = types.GE
 		}
 		return &types.ECmp{op, e1, e2}, nil
 	}
@@ -431,6 +435,10 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 				return b.CreateICmp(llvm.IntULT, lhs, rhs, "lt"), nil
 			case types.GT:
 				return b.CreateICmp(llvm.IntUGT, lhs, rhs, "gt"), nil
+			case types.LE:
+				return b.CreateICmp(llvm.IntULE, lhs, rhs, "le"), nil
+			case types.GE:
+				return b.CreateICmp(llvm.IntUGE, lhs, rhs, "ge"), nil
 			}
 		case *types.TBool:
 			switch x.Op {

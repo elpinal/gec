@@ -96,6 +96,8 @@ const (
 	NE
 	LT
 	GT
+	LE
+	GE
 )
 
 type Cmp struct {

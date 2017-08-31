@@ -79,7 +79,21 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 				return NE
 			}
 			return int(c)
-		case '+', '*', '\\', '<', '>', '(', ')':
+		case '<':
+			x.next()
+			if x.ch == '=' {
+				x.next()
+				return LE
+			}
+			return int(c)
+		case '>':
+			x.next()
+			if x.ch == '=' {
+				x.next()
+				return GE
+			}
+			return int(c)
+		case '+', '*', '\\', '(', ')':
 			x.next()
 			return int(c)
 		case ' ':
