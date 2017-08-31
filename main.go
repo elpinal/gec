@@ -29,7 +29,7 @@ func main() {
 		fmt.Fprintf(os.Stdout, "gec: %v\n", err)
 		os.Exit(1)
 	}
-	err = run(b, logFile)
+	err = run(b, flag.Arg(0), logFile)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
@@ -56,9 +56,9 @@ func newBuilder(lb llvm.Builder) *Builder {
 	}
 }
 
-func run(input []byte, logFile *string) error {
+func run(input []byte, filename string, logFile *string) error {
 	builder := newBuilder(llvm.NewBuilder())
-	builder.module = llvm.NewModule("gec")
+	builder.module = llvm.NewModule(filename)
 
 	main := llvm.FunctionType(llvm.Int32Type(), []llvm.Type{}, false)
 	llvm.AddFunction(builder.module, "main", main)
