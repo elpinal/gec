@@ -27,6 +27,10 @@ type exprLexer struct {
 	off    uint // start at 0
 	line   uint // start at 1
 	column uint // start at 1
+
+	// information for current token
+	tokLine   uint
+	tokColumn uint
 }
 
 func newLexer(src []byte) *exprLexer {
@@ -48,6 +52,8 @@ func isNumber(c rune) bool {
 
 func (x *exprLexer) Lex(yylval *yySymType) int {
 	for {
+		x.tokLine = x.line
+		x.tokColumn = x.column
 		c := x.ch
 		switch c {
 		case eof:
@@ -60,7 +66,6 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 			}
 			return int(c)
 		case '=', '+', '*', '/', ';', '\\':
-			// FIXME: Possibility of a wrong position.
 			x.next()
 			return int(c)
 		case ' ', '\n':
@@ -130,7 +135,7 @@ func (x *exprLexer) next() {
 }
 
 func (x *exprLexer) Error(s string) {
-	x.err = fmt.Errorf("[%d:%d]: %s", x.line, x.column, s)
+	x.err = fmt.Errorf("[%d:%d]: %s", x.tokLine, x.tokColumn, s)
 }
 
 func parse(src []byte) (*ast.WithDecls, error) {
