@@ -94,3 +94,17 @@ type Eq struct {
 }
 
 func (x *Eq) expr() {}
+
+type LT struct {
+	LHS Expr
+	RHS Expr
+}
+
+func (x *LT) expr() {}
+
+type GT struct {
+	LHS Expr
+	RHS Expr
+}
+
+func (x *GT) expr() {}

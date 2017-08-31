@@ -283,6 +283,26 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, err
 		}
 		return &types.ECmp{types.Eq, e1, e2}, nil
+	case *ast.LT:
+		e1, err := b.genIR(x.LHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		e2, err := b.genIR(x.RHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		return &types.ECmp{types.LT, e1, e2}, nil
+	case *ast.GT:
+		e1, err := b.genIR(x.LHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		e2, err := b.genIR(x.RHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		return &types.ECmp{types.GT, e1, e2}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }
@@ -407,8 +427,20 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 			return llvm.Value{}, err
 		}
 		switch t.(type) {
-		case *types.TInt, *types.TBool:
-			return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
+		case *types.TInt:
+			switch x.Op {
+			case types.Eq:
+				return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
+			case types.LT:
+				return b.CreateICmp(llvm.IntULT, lhs, rhs, "eq"), nil
+			case types.GT:
+				return b.CreateICmp(llvm.IntUGT, lhs, rhs, "eq"), nil
+			}
+		case *types.TBool:
+			switch x.Op {
+			case types.Eq:
+				return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
+			}
 		}
 		return llvm.Value{}, fmt.Errorf("unsupported comparison: %#v", expr)
 	}

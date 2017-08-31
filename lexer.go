@@ -72,7 +72,7 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 				return EQ
 			}
 			return int(c)
-		case '+', '*', '/', ';', '\\':
+		case '+', '*', '/', ';', '\\', '<', '>':
 			x.next()
 			return int(c)
 		case ' ', '\n':

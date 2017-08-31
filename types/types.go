@@ -147,6 +147,8 @@ type CmpOp int
 const (
 	InvalidCmpOp CmpOp = iota
 	Eq
+	LT
+	GT
 )
 
 type EArithBinOp struct {

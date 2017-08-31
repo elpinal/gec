@@ -18,7 +18,7 @@ import (
 }
 
 %type <top> top
-%type <expr> expr term factor atom absexpr abs eqexpr
+%type <expr> expr term factor atom absexpr abs cmpexpr
 %type <decl> decl
 %type <decls> decls
 
@@ -63,20 +63,28 @@ absexpr:
         {
                 $$ = $1
         }
-|	eqexpr
+|	cmpexpr
         {
                 $$ = $1
         }
-|	IF eqexpr THEN eqexpr ELSE eqexpr
+|	IF cmpexpr THEN cmpexpr ELSE cmpexpr
         {
                 $$ = &ast.If{Cond: $2, E1: $4, E2: $6}
         }
 
-eqexpr:
+cmpexpr:
         expr
 |	expr EQ expr
         {
                 $$ = &ast.Eq{LHS: $1, RHS: $3}
+        }
+|	expr '<' expr
+        {
+                $$ = &ast.LT{LHS: $1, RHS: $3}
+        }
+|	expr '>' expr
+        {
+                $$ = &ast.GT{LHS: $1, RHS: $3}
         }
 
 expr:
