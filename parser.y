@@ -150,6 +150,10 @@ atom:
         {
                 $$ = &ast.Bool{X: $1}
         }
+|	'(' absexpr ')'
+        {
+                $$ = $2
+        }
 
 abs:
         '\\' IDENT RARROW absexpr
