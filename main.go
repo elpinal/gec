@@ -407,7 +407,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 			return llvm.Value{}, err
 		}
 		switch t.(type) {
-		case *types.TInt:
+		case *types.TInt, *types.TBool:
 			return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
 		}
 		return llvm.Value{}, fmt.Errorf("unsupported comparison: %#v", expr)
