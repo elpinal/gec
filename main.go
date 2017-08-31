@@ -259,6 +259,20 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, err
 		}
 		return &types.EArithBinOp{types.Div, e1, e2}, nil
+	case *ast.If:
+		cond, err := b.genIR(x.Cond, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		e1, err := b.genIR(x.E1, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		e2, err := b.genIR(x.E2, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		return &types.EIf{cond, e1, e2}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }
@@ -308,12 +322,12 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 	case *types.EInt:
 		return llvm.ConstInt(llvm.Int32Type(), uint64(x.Value), false), nil
 	case *types.EBool:
-		// 0 for true, 1 for false.
+		// 0 for false, 1 for true.
 		var n int
-		if !x.Value {
+		if x.Value {
 			n = 1
 		}
-		return llvm.ConstInt(llvm.Int8Type(), uint64(n), false), nil
+		return llvm.ConstInt(llvm.Int1Type(), uint64(n), false), nil
 	case *types.EVar:
 		v, ok := b.params[x.Name]
 		if !ok {
@@ -339,6 +353,35 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		case types.Div:
 			return b.CreateUDiv(v1, v2, "div"), nil
 		}
+	case *types.EIf:
+		cond, err := b.gen(x.Cond, &types.TBool{})
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		f := b.entry.Parent()
+		b1 := llvm.AddBasicBlock(f, "then")
+		b2 := llvm.AddBasicBlock(f, "else")
+		bEnd := llvm.AddBasicBlock(f, "end")
+		b.CreateCondBr(cond, b1, b2)
+
+		b.SetInsertPointAtEnd(b1)
+		v1, err := b.gen(x.E1, expected)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		b.CreateBr(bEnd)
+
+		b.SetInsertPointAtEnd(b2)
+		v2, err := b.gen(x.E2, expected)
+		if err != nil {
+			return llvm.Value{}, err
+		}
+		b.CreateBr(bEnd)
+
+		b.SetInsertPointAtEnd(bEnd)
+		phi := b.CreatePHI(llvmType(expected), "phi")
+		phi.AddIncoming([]llvm.Value{v1, v2}, []llvm.BasicBlock{b1, b2})
+		return phi, nil
 	}
 	return llvm.Value{}, fmt.Errorf("LLVM IR generation: unexpected expression: %#v", expr)
 }

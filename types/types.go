@@ -131,9 +131,9 @@ type ELet struct {
 }
 
 type EIf struct {
-	cond Expr
-	e1   Expr
-	e2   Expr
+	Cond Expr
+	E1   Expr
+	E2   Expr
 }
 
 type EArithBinOp struct {
@@ -370,7 +370,7 @@ func (ti *TI) ti(env TypeEnv, expr Expr) (Subst, Type, error) {
 		}
 		return s1.compose(s2), t2, nil
 	case *EIf:
-		s1, t1, err := ti.ti(env, e.cond)
+		s1, t1, err := ti.ti(env, e.Cond)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -378,11 +378,11 @@ func (ti *TI) ti(env TypeEnv, expr Expr) (Subst, Type, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		s3, t2, err := ti.ti(env.apply(s2).(TypeEnv), e.e1)
+		s3, t2, err := ti.ti(env.apply(s2).(TypeEnv), e.E1)
 		if err != nil {
 			return nil, nil, err
 		}
-		s4, t3, err := ti.ti(env.apply(s3).(TypeEnv), e.e2)
+		s4, t3, err := ti.ti(env.apply(s3).(TypeEnv), e.E2)
 		if err != nil {
 			return nil, nil, err
 		}

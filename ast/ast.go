@@ -79,3 +79,11 @@ type Abs struct {
 }
 
 func (x *Abs) expr() {}
+
+type If struct {
+	Cond Expr
+	E1   Expr
+	E2   Expr
+}
+
+func (x *If) expr() {}

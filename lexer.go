@@ -113,6 +113,12 @@ func (x *exprLexer) takeWhile(kind int, f func(rune) bool, yylval *yySymType) in
 	switch s {
 	case "true", "false":
 		return BOOL
+	case "if":
+		return IF
+	case "then":
+		return THEN
+	case "else":
+		return ELSE
 	}
 	return kind
 }

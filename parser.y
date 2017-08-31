@@ -22,7 +22,7 @@ import (
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NUM IDENT RARROW BOOL
+%token <token> ILLEGAL NUM IDENT RARROW BOOL IF THEN ELSE
 
 %%
 
@@ -66,6 +66,10 @@ absexpr:
 |	expr
         {
                 $$ = $1
+        }
+|	IF expr THEN expr ELSE expr
+        {
+                $$ = &ast.If{Cond: $2, E1: $4, E2: $6}
         }
 
 expr:
