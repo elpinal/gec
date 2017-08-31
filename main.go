@@ -299,6 +299,8 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			op = types.LE
 		case ast.GE:
 			op = types.GE
+		default:
+			return nil, fmt.Errorf("unsupported comparison: %v", expr)
 		}
 		return &types.ECmp{op, e1, e2}, nil
 	}
