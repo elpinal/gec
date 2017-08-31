@@ -391,5 +391,5 @@ func llvmType(t types.Type) llvm.Type {
 	case *types.TInt:
 		return llvm.Int32Type()
 	}
-	panic(fmt.Sprintf("converting type to LLVM's one: unexpected error: %v", t))
+	panic(fmt.Sprintf("converting type to LLVM's one: unexpected error: %#v", t))
 }
