@@ -22,7 +22,7 @@ import (
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NUM IDENT RARROW
+%token <token> ILLEGAL NUM IDENT RARROW BOOL
 
 %%
 
@@ -114,6 +114,10 @@ atom:
 |	IDENT
         {
                 $$ = &ast.Ident{Name: $1}
+        }
+|	BOOL
+        {
+                $$ = &ast.Bool{X: $1}
         }
 
 abs:

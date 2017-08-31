@@ -12,6 +12,12 @@ type Int struct {
 
 func (x *Int) expr() {}
 
+type Bool struct {
+	X token.Token
+}
+
+func (x *Bool) expr() {}
+
 type Add struct {
 	X, Y Expr
 }

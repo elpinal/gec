@@ -104,10 +104,15 @@ func (x *exprLexer) takeWhile(kind int, f func(rune) bool, yylval *yySymType) in
 		add(&b, x.ch)
 		x.next()
 	}
+	s := b.String()
 	yylval.token = token.Token{
-		Lit:      b.String(),
+		Lit:      s,
 		Kind:     kind,
 		Position: token.NewPosition(line, column),
+	}
+	switch s {
+	case "true", "false":
+		return BOOL
 	}
 	return kind
 }

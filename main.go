@@ -211,6 +211,14 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, err
 		}
 		return &types.EInt{n}, nil
+	case *ast.Bool:
+		switch x.X.Lit {
+		case "true":
+			return &types.EBool{true}, nil
+		case "false":
+			return &types.EBool{false}, nil
+		}
+		return nil, fmt.Errorf("invalid boolean value: %v", x)
 	case *ast.Add:
 		e1, err := b.genIR(x.X, referredFrom)
 		if err != nil {
@@ -299,6 +307,13 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		return v, err
 	case *types.EInt:
 		return llvm.ConstInt(llvm.Int32Type(), uint64(x.Value), false), nil
+	case *types.EBool:
+		// 0 for true, 1 for false.
+		var n int
+		if !x.Value {
+			n = 1
+		}
+		return llvm.ConstInt(llvm.Int8Type(), uint64(n), false), nil
 	case *types.EVar:
 		v, ok := b.params[x.Name]
 		if !ok {
