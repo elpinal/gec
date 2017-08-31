@@ -111,65 +111,67 @@ state 11
 state 12
 	cmpexpr:  expr.    (13)
 	cmpexpr:  expr.EQ expr 
+	cmpexpr:  expr.NE expr 
 	cmpexpr:  expr.'<' expr 
 	cmpexpr:  expr.'>' expr 
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
 	EQ  shift 26
-	'<'  shift 27
-	'>'  shift 28
-	'+'  shift 29
-	'-'  shift 30
+	NE  shift 27
+	'<'  shift 28
+	'>'  shift 29
+	'+'  shift 30
+	'-'  shift 31
 	.  reduce 13 (src line 87)
 
 
 state 13
 	decl:  IDENT.'=' absexpr 
-	atom:  IDENT.    (26)
+	atom:  IDENT.    (27)
 
-	'='  shift 31
-	.  reduce 26 (src line 145)
+	'='  shift 32
+	.  reduce 27 (src line 149)
 
 
 state 14
-	expr:  term.    (17)
+	expr:  term.    (18)
 	term:  term.'*' factor 
 	term:  term.'/' factor 
 
-	'*'  shift 32
-	'/'  shift 33
-	.  reduce 17 (src line 102)
+	'*'  shift 33
+	'/'  shift 34
+	.  reduce 18 (src line 106)
 
 
 state 15
-	term:  factor.    (20)
+	term:  factor.    (21)
 	factor:  factor.atom 
 
 	NUM  shift 17
 	IDENT  shift 24
 	BOOL  shift 18
 	'('  shift 19
-	.  reduce 20 (src line 116)
+	.  reduce 21 (src line 120)
 
-	atom  goto 34
+	atom  goto 35
 
 state 16
-	factor:  atom.    (23)
+	factor:  atom.    (24)
 
-	.  reduce 23 (src line 130)
+	.  reduce 24 (src line 134)
 
 
 state 17
-	atom:  NUM.    (25)
+	atom:  NUM.    (26)
 
-	.  reduce 25 (src line 140)
+	.  reduce 26 (src line 144)
 
 
 state 18
-	atom:  BOOL.    (27)
+	atom:  BOOL.    (28)
 
-	.  reduce 27 (src line 149)
+	.  reduce 28 (src line 153)
 
 
 state 19
@@ -187,7 +189,7 @@ state 19
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 35
+	absexpr  goto 36
 	abs  goto 7
 	cmpexpr  goto 8
 
@@ -215,10 +217,10 @@ state 21
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 36
+	absexpr  goto 37
 	abs  goto 7
 	cmpexpr  goto 8
-	decl  goto 37
+	decl  goto 38
 
 state 22
 	newlines:  NEWLINE.margin 
@@ -226,25 +228,25 @@ state 22
 
 	.  reduce 4 (src line 51)
 
-	margin  goto 38
+	margin  goto 39
 
 state 23
 	absexpr:  IF cmpexpr.THEN cmpexpr ELSE cmpexpr 
 
-	THEN  shift 39
+	THEN  shift 40
 	.  error
 
 
 state 24
-	atom:  IDENT.    (26)
+	atom:  IDENT.    (27)
 
-	.  reduce 26 (src line 145)
+	.  reduce 27 (src line 149)
 
 
 state 25
 	abs:  '\\' IDENT.RARROW absexpr 
 
-	RARROW  shift 40
+	RARROW  shift 41
 	.  error
 
 
@@ -257,27 +259,13 @@ state 26
 	'('  shift 19
 	.  error
 
-	expr  goto 41
-	term  goto 14
-	factor  goto 15
-	atom  goto 16
-
-state 27
-	cmpexpr:  expr '<'.expr 
-
-	NUM  shift 17
-	IDENT  shift 24
-	BOOL  shift 18
-	'('  shift 19
-	.  error
-
 	expr  goto 42
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
 
-state 28
-	cmpexpr:  expr '>'.expr 
+state 27
+	cmpexpr:  expr NE.expr 
 
 	NUM  shift 17
 	IDENT  shift 24
@@ -290,7 +278,35 @@ state 28
 	factor  goto 15
 	atom  goto 16
 
+state 28
+	cmpexpr:  expr '<'.expr 
+
+	NUM  shift 17
+	IDENT  shift 24
+	BOOL  shift 18
+	'('  shift 19
+	.  error
+
+	expr  goto 44
+	term  goto 14
+	factor  goto 15
+	atom  goto 16
+
 state 29
+	cmpexpr:  expr '>'.expr 
+
+	NUM  shift 17
+	IDENT  shift 24
+	BOOL  shift 18
+	'('  shift 19
+	.  error
+
+	expr  goto 45
+	term  goto 14
+	factor  goto 15
+	atom  goto 16
+
+state 30
 	expr:  expr '+'.term 
 
 	NUM  shift 17
@@ -299,11 +315,11 @@ state 29
 	'('  shift 19
 	.  error
 
-	term  goto 44
+	term  goto 46
 	factor  goto 15
 	atom  goto 16
 
-state 30
+state 31
 	expr:  expr '-'.term 
 
 	NUM  shift 17
@@ -312,11 +328,11 @@ state 30
 	'('  shift 19
 	.  error
 
-	term  goto 45
+	term  goto 47
 	factor  goto 15
 	atom  goto 16
 
-state 31
+state 32
 	decl:  IDENT '='.absexpr 
 
 	NUM  shift 17
@@ -331,11 +347,11 @@ state 31
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 46
+	absexpr  goto 48
 	abs  goto 7
 	cmpexpr  goto 8
 
-state 32
+state 33
 	term:  term '*'.factor 
 
 	NUM  shift 17
@@ -344,10 +360,10 @@ state 32
 	'('  shift 19
 	.  error
 
-	factor  goto 47
+	factor  goto 49
 	atom  goto 16
 
-state 33
+state 34
 	term:  term '/'.factor 
 
 	NUM  shift 17
@@ -356,35 +372,35 @@ state 33
 	'('  shift 19
 	.  error
 
-	factor  goto 48
+	factor  goto 50
 	atom  goto 16
 
-state 34
-	factor:  factor atom.    (24)
-
-	.  reduce 24 (src line 135)
-
-
 state 35
-	atom:  '(' absexpr.')' 
+	factor:  factor atom.    (25)
 
-	')'  shift 49
-	.  error
+	.  reduce 25 (src line 139)
 
 
 state 36
+	atom:  '(' absexpr.')' 
+
+	')'  shift 51
+	.  error
+
+
+state 37
 	top:  decls newlines absexpr.    (3)
 
 	.  reduce 3 (src line 43)
 
 
-state 37
+state 38
 	decls:  decls newlines decl.    (7)
 
 	.  reduce 7 (src line 57)
 
 
-state 38
+state 39
 	margin:  margin.NEWLINE 
 	newlines:  NEWLINE margin.    (6)
 
@@ -392,7 +408,7 @@ state 38
 	.  reduce 6 (src line 54)
 
 
-state 39
+state 40
 	absexpr:  IF cmpexpr THEN.cmpexpr ELSE cmpexpr 
 
 	NUM  shift 17
@@ -405,9 +421,9 @@ state 39
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	cmpexpr  goto 50
+	cmpexpr  goto 52
 
-state 40
+state 41
 	abs:  '\\' IDENT RARROW.absexpr 
 
 	NUM  shift 17
@@ -422,80 +438,78 @@ state 40
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 51
+	absexpr  goto 53
 	abs  goto 7
 	cmpexpr  goto 8
 
-state 41
+state 42
 	cmpexpr:  expr EQ expr.    (14)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 29
-	'-'  shift 30
+	'+'  shift 30
+	'-'  shift 31
 	.  reduce 14 (src line 89)
 
 
-state 42
-	cmpexpr:  expr '<' expr.    (15)
+state 43
+	cmpexpr:  expr NE expr.    (15)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 29
-	'-'  shift 30
+	'+'  shift 30
+	'-'  shift 31
 	.  reduce 15 (src line 93)
 
 
-state 43
-	cmpexpr:  expr '>' expr.    (16)
+state 44
+	cmpexpr:  expr '<' expr.    (16)
 	expr:  expr.'+' term 
 	expr:  expr.'-' term 
 
-	'+'  shift 29
-	'-'  shift 30
+	'+'  shift 30
+	'-'  shift 31
 	.  reduce 16 (src line 97)
 
 
-state 44
-	expr:  expr '+' term.    (18)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
-
-	'*'  shift 32
-	'/'  shift 33
-	.  reduce 18 (src line 107)
-
-
 state 45
-	expr:  expr '-' term.    (19)
-	term:  term.'*' factor 
-	term:  term.'/' factor 
+	cmpexpr:  expr '>' expr.    (17)
+	expr:  expr.'+' term 
+	expr:  expr.'-' term 
 
-	'*'  shift 32
-	'/'  shift 33
-	.  reduce 19 (src line 111)
+	'+'  shift 30
+	'-'  shift 31
+	.  reduce 17 (src line 101)
 
 
 state 46
+	expr:  expr '+' term.    (19)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
+
+	'*'  shift 33
+	'/'  shift 34
+	.  reduce 19 (src line 111)
+
+
+state 47
+	expr:  expr '-' term.    (20)
+	term:  term.'*' factor 
+	term:  term.'/' factor 
+
+	'*'  shift 33
+	'/'  shift 34
+	.  reduce 20 (src line 115)
+
+
+state 48
 	decl:  IDENT '=' absexpr.    (9)
 
 	.  reduce 9 (src line 67)
 
 
-state 47
-	term:  term '*' factor.    (21)
-	factor:  factor.atom 
-
-	NUM  shift 17
-	IDENT  shift 24
-	BOOL  shift 18
-	'('  shift 19
-	.  reduce 21 (src line 121)
-
-	atom  goto 34
-
-state 48
-	term:  term '/' factor.    (22)
+state 49
+	term:  term '*' factor.    (22)
 	factor:  factor.atom 
 
 	NUM  shift 17
@@ -504,28 +518,40 @@ state 48
 	'('  shift 19
 	.  reduce 22 (src line 125)
 
-	atom  goto 34
-
-state 49
-	atom:  '(' absexpr ')'.    (28)
-
-	.  reduce 28 (src line 153)
-
+	atom  goto 35
 
 state 50
-	absexpr:  IF cmpexpr THEN cmpexpr.ELSE cmpexpr 
+	term:  term '/' factor.    (23)
+	factor:  factor.atom 
 
-	ELSE  shift 52
-	.  error
+	NUM  shift 17
+	IDENT  shift 24
+	BOOL  shift 18
+	'('  shift 19
+	.  reduce 23 (src line 129)
 
+	atom  goto 35
 
 state 51
-	abs:  '\\' IDENT RARROW absexpr.    (29)
+	atom:  '(' absexpr ')'.    (29)
 
-	.  reduce 29 (src line 158)
+	.  reduce 29 (src line 157)
 
 
 state 52
+	absexpr:  IF cmpexpr THEN cmpexpr.ELSE cmpexpr 
+
+	ELSE  shift 54
+	.  error
+
+
+state 53
+	abs:  '\\' IDENT RARROW absexpr.    (30)
+
+	.  reduce 30 (src line 162)
+
+
+state 54
 	absexpr:  IF cmpexpr THEN cmpexpr ELSE.cmpexpr 
 
 	NUM  shift 17
@@ -538,23 +564,23 @@ state 52
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	cmpexpr  goto 53
+	cmpexpr  goto 55
 
-state 53
+state 55
 	absexpr:  IF cmpexpr THEN cmpexpr ELSE cmpexpr.    (12)
 
 	.  reduce 12 (src line 82)
 
 
-23 terminals, 14 nonterminals
-30 grammar rules, 54/8000 states
+24 terminals, 14 nonterminals
+31 grammar rules, 56/8000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
 63 working sets used
-memory: parser 85/120000
-38 extra closures
-109 shift entries, 1 exceptions
-33 goto entries
-51 entries saved by goto default
-Optimizer space used: output 81/120000
-81 table entries, 8 zero
-maximum spread: 23, maximum offset: 52
+memory: parser 89/120000
+40 extra closures
+116 shift entries, 1 exceptions
+34 goto entries
+54 entries saved by goto default
+Optimizer space used: output 75/120000
+75 table entries, 0 zero
+maximum spread: 24, maximum offset: 54

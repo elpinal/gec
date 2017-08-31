@@ -95,6 +95,13 @@ type Eq struct {
 
 func (x *Eq) expr() {}
 
+type NE struct {
+	LHS Expr
+	RHS Expr
+}
+
+func (x *NE) expr() {}
+
 type LT struct {
 	LHS Expr
 	RHS Expr

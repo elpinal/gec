@@ -147,6 +147,7 @@ type CmpOp int
 const (
 	InvalidCmpOp CmpOp = iota
 	Eq
+	NE
 	LT
 	GT
 )

@@ -22,7 +22,7 @@ import (
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ
+%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE
 
 %%
 
@@ -89,6 +89,10 @@ cmpexpr:
 |	expr EQ expr
         {
                 $$ = &ast.Eq{LHS: $1, RHS: $3}
+        }
+|	expr NE expr
+        {
+                $$ = &ast.NE{LHS: $1, RHS: $3}
         }
 |	expr '<' expr
         {

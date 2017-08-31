@@ -283,6 +283,16 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, err
 		}
 		return &types.ECmp{types.Eq, e1, e2}, nil
+	case *ast.NE:
+		e1, err := b.genIR(x.LHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		e2, err := b.genIR(x.RHS, referredFrom)
+		if err != nil {
+			return nil, err
+		}
+		return &types.ECmp{types.NE, e1, e2}, nil
 	case *ast.LT:
 		e1, err := b.genIR(x.LHS, referredFrom)
 		if err != nil {
@@ -431,15 +441,19 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 			switch x.Op {
 			case types.Eq:
 				return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
+			case types.NE:
+				return b.CreateICmp(llvm.IntNE, lhs, rhs, "ne"), nil
 			case types.LT:
-				return b.CreateICmp(llvm.IntULT, lhs, rhs, "eq"), nil
+				return b.CreateICmp(llvm.IntULT, lhs, rhs, "lt"), nil
 			case types.GT:
-				return b.CreateICmp(llvm.IntUGT, lhs, rhs, "eq"), nil
+				return b.CreateICmp(llvm.IntUGT, lhs, rhs, "gt"), nil
 			}
 		case *types.TBool:
 			switch x.Op {
 			case types.Eq:
 				return b.CreateICmp(llvm.IntEQ, lhs, rhs, "eq"), nil
+			case types.NE:
+				return b.CreateICmp(llvm.IntNE, lhs, rhs, "ne"), nil
 			}
 		}
 		return llvm.Value{}, fmt.Errorf("unsupported comparison: %#v", expr)
