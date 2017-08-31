@@ -298,7 +298,7 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 		return b.CreateCall(a, []llvm.Value{arg}, "call"), nil
 	case *types.EAbs:
 		f := llvm.FunctionType(
-			llvm.Int32Type(),
+			llvmType(expected.(*types.TFun).Body),
 			[]llvm.Type{llvmType(expected.(*types.TFun).Arg)},
 			false,
 		)
@@ -390,6 +390,8 @@ func llvmType(t types.Type) llvm.Type {
 	switch t.(type) {
 	case *types.TInt:
 		return llvm.Int32Type()
+	case *types.TBool:
+		return llvm.Int1Type()
 	}
 	panic(fmt.Sprintf("converting type to LLVM's one: unexpected error: %#v", t))
 }
