@@ -19,6 +19,7 @@ import (
 
 func main() {
 	logFile := flag.String("log", "", "specify `filename` to output LLVM IR")
+	printIR := flag.Bool("printir", false, "print IR")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		fmt.Fprintln(os.Stdout, "gec: no Elacht source file given")
@@ -29,7 +30,7 @@ func main() {
 		fmt.Fprintf(os.Stdout, "gec: %v\n", err)
 		os.Exit(1)
 	}
-	err = run(b, flag.Arg(0), logFile)
+	err = run(b, flag.Arg(0), *printIR, logFile)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
@@ -56,7 +57,7 @@ func newBuilder(lb llvm.Builder) *Builder {
 	}
 }
 
-func run(input []byte, filename string, logFile *string) error {
+func run(input []byte, filename string, printIR bool, logFile *string) error {
 	builder := newBuilder(llvm.NewBuilder())
 	builder.module = llvm.NewModule(filename)
 
@@ -79,7 +80,9 @@ func run(input []byte, filename string, logFile *string) error {
 		return err
 	}
 
-	pp.Println(a)
+	if printIR {
+		pp.Println(a)
+	}
 	v, err := builder.gen(a, &types.TInt{})
 	if err != nil {
 		return err
