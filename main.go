@@ -276,7 +276,7 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, err
 		}
 		return &types.EIf{cond, e1, e2}, nil
-	case *ast.Eq:
+	case *ast.Cmp:
 		e1, err := b.genIR(x.LHS, referredFrom)
 		if err != nil {
 			return nil, err
@@ -285,37 +285,18 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		if err != nil {
 			return nil, err
 		}
-		return &types.ECmp{types.Eq, e1, e2}, nil
-	case *ast.NE:
-		e1, err := b.genIR(x.LHS, referredFrom)
-		if err != nil {
-			return nil, err
+		var op types.CmpOp
+		switch x.Op {
+		case ast.Eq:
+			op = types.Eq
+		case ast.NE:
+			op = types.NE
+		case ast.LT:
+			op = types.LT
+		case ast.GT:
+			op = types.GT
 		}
-		e2, err := b.genIR(x.RHS, referredFrom)
-		if err != nil {
-			return nil, err
-		}
-		return &types.ECmp{types.NE, e1, e2}, nil
-	case *ast.LT:
-		e1, err := b.genIR(x.LHS, referredFrom)
-		if err != nil {
-			return nil, err
-		}
-		e2, err := b.genIR(x.RHS, referredFrom)
-		if err != nil {
-			return nil, err
-		}
-		return &types.ECmp{types.LT, e1, e2}, nil
-	case *ast.GT:
-		e1, err := b.genIR(x.LHS, referredFrom)
-		if err != nil {
-			return nil, err
-		}
-		e2, err := b.genIR(x.RHS, referredFrom)
-		if err != nil {
-			return nil, err
-		}
-		return &types.ECmp{types.GT, e1, e2}, nil
+		return &types.ECmp{op, e1, e2}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %v", expr)
 }

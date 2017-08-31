@@ -556,25 +556,25 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:90
 		{
-			yyVAL.expr = &ast.Eq{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
+			yyVAL.expr = &ast.Cmp{Op: ast.Eq, LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
 		}
 	case 15:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:94
 		{
-			yyVAL.expr = &ast.NE{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
+			yyVAL.expr = &ast.Cmp{Op: ast.NE, LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
 		}
 	case 16:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:98
 		{
-			yyVAL.expr = &ast.LT{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
+			yyVAL.expr = &ast.Cmp{Op: ast.LT, LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
 		}
 	case 17:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:102
 		{
-			yyVAL.expr = &ast.GT{LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
+			yyVAL.expr = &ast.Cmp{Op: ast.GT, LHS: yyDollar[1].expr, RHS: yyDollar[3].expr}
 		}
 	case 18:
 		yyDollar = yyS[yypt-1 : yypt+1]

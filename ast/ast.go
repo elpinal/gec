@@ -88,30 +88,20 @@ type If struct {
 
 func (x *If) expr() {}
 
-type Eq struct {
+type CmpOp int
+
+const (
+	InvalidCmpOp CmpOp = iota
+	Eq
+	NE
+	LT
+	GT
+)
+
+type Cmp struct {
+	Op  CmpOp
 	LHS Expr
 	RHS Expr
 }
 
-func (x *Eq) expr() {}
-
-type NE struct {
-	LHS Expr
-	RHS Expr
-}
-
-func (x *NE) expr() {}
-
-type LT struct {
-	LHS Expr
-	RHS Expr
-}
-
-func (x *LT) expr() {}
-
-type GT struct {
-	LHS Expr
-	RHS Expr
-}
-
-func (x *GT) expr() {}
+func (x *Cmp) expr() {}

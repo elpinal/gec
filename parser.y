@@ -88,19 +88,19 @@ cmpexpr:
         expr
 |	expr EQ expr
         {
-                $$ = &ast.Eq{LHS: $1, RHS: $3}
+                $$ = &ast.Cmp{Op: ast.Eq, LHS: $1, RHS: $3}
         }
 |	expr NE expr
         {
-                $$ = &ast.NE{LHS: $1, RHS: $3}
+                $$ = &ast.Cmp{Op: ast.NE, LHS: $1, RHS: $3}
         }
 |	expr '<' expr
         {
-                $$ = &ast.LT{LHS: $1, RHS: $3}
+                $$ = &ast.Cmp{Op: ast.LT, LHS: $1, RHS: $3}
         }
 |	expr '>' expr
         {
-                $$ = &ast.GT{LHS: $1, RHS: $3}
+                $$ = &ast.Cmp{Op: ast.GT, LHS: $1, RHS: $3}
         }
 
 expr:
