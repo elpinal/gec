@@ -27,12 +27,7 @@ import (
 %%
 
 program:
-        top
-|	top newlines
-        {
-                $$ = $1
-        }
-|	newlines top
+	margin top margin
         {
                 $$ = $2
         }
@@ -53,9 +48,11 @@ top:
                 }
         }
 
+margin:
+|	margin NEWLINE
+
 newlines:
-        NEWLINE
-|	newlines NEWLINE
+        NEWLINE margin
 
 decls:
         decls newlines decl
