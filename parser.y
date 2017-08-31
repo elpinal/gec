@@ -17,14 +17,25 @@ import (
         token token.Token
 }
 
-%type <top> top
+%type <top> top program
 %type <expr> expr term factor atom absexpr abs cmpexpr
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NUM IDENT RARROW BOOL IF THEN ELSE EQ
+%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ
 
 %%
+
+program:
+        top
+|	top newlines
+        {
+                $$ = $1
+        }
+|	newlines top
+        {
+                $$ = $2
+        }
 
 top:
         absexpr
@@ -34,7 +45,7 @@ top:
                         l.expr = $$
                 }
         }
-|	decls ';' absexpr
+|	decls newlines absexpr
         {
                 $$ = &ast.WithDecls{Decls: $1, Expr: $3}
                 if l, ok := yylex.(*exprLexer); ok {
@@ -42,8 +53,12 @@ top:
                 }
         }
 
+newlines:
+        NEWLINE
+|	newlines NEWLINE
+
 decls:
-        decls ';' decl
+        decls newlines decl
         {
                 $$ = append($1, $3)
         }
