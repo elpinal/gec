@@ -107,3 +107,7 @@ type Cmp struct {
 }
 
 func (x *Cmp) expr() {}
+
+type NilList struct{}
+
+func (x *NilList) expr() {}

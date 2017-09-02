@@ -166,6 +166,10 @@ atom:
         {
                 $$ = $2
         }
+|	'[' ']'
+        {
+                $$ = &ast.NilList{}
+        }
 
 abs:
         '\\' IDENT RARROW absexpr
