@@ -201,8 +201,8 @@ func (e *ELet) Expr()        {}
 func (e *EIf) Expr()         {}
 func (a *EArithBinOp) Expr() {}
 func (a *ECmp) Expr()        {}
-func (e *EList) Expr() {}
-func (e *ENil) Expr()  {}
+func (e *EList) Expr()       {}
+func (e *ENil) Expr()        {}
 
 type Subst map[string]Type
 
