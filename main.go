@@ -10,12 +10,11 @@ import (
 	"github.com/elpinal/gec/ast"
 	"github.com/elpinal/gec/parser"
 	"github.com/elpinal/gec/token"
-
-	"github.com/k0kubun/pp"
+	"github.com/elpinal/gec/types"
 
 	"llvm.org/llvm/bindings/go/llvm"
 
-	"github.com/elpinal/gec/types"
+	"github.com/k0kubun/pp"
 )
 
 func main() {
