@@ -8,6 +8,10 @@ type Token struct {
 	Position
 }
 
+func (t Token) String() string {
+	return fmt.Sprintf("Token %d %q %v", t.Kind, t.Lit, t.Position)
+}
+
 type Position struct {
 	Line   uint
 	Column uint
