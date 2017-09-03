@@ -303,6 +303,8 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 			return nil, fmt.Errorf("unsupported comparison: %v", expr)
 		}
 		return &types.ECmp{op, e1, e2}, nil
+	case *ast.NilList:
+		return &types.ENil{}, nil
 	}
 	return nil, fmt.Errorf("unknown expression: %[1]v (type: %[1]T)", expr)
 }
@@ -451,6 +453,8 @@ func (b *Builder) gen(expr types.Expr, expected types.Type) (llvm.Value, error) 
 			}
 		}
 		return llvm.Value{}, fmt.Errorf("unsupported comparison: %#v", expr)
+	case *types.ENil:
+		return llvm.ConstArray(llvmType(expected), []llvm.Value{}), nil
 	}
 	return llvm.Value{}, fmt.Errorf("LLVM IR generation: unexpected expression: %#v", expr)
 }
