@@ -1,4 +1,4 @@
-package main
+package parser
 
 //go:generate goyacc -o parser.go parser.y
 
@@ -180,7 +180,7 @@ func (x *exprLexer) Error(s string) {
 	x.err = fmt.Errorf("[%d:%d]: %s", x.tokLine, x.tokColumn, s)
 }
 
-func parse(src []byte) (*ast.WithDecls, error) {
+func Parse(src []byte) (*ast.WithDecls, error) {
 	l := newLexer(src)
 	yyErrorVerbose = true
 	yyParse(l)

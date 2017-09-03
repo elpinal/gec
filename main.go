@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/elpinal/gec/ast"
+	"github.com/elpinal/gec/parser"
 	"github.com/elpinal/gec/token"
 
 	"github.com/k0kubun/pp"
@@ -67,7 +68,7 @@ func run(input []byte, filename string, printIR bool, logFile *string) error {
 	builder.entry = block
 	builder.SetInsertPoint(block, block.FirstInstruction())
 
-	decls, err := parse(input)
+	decls, err := parser.Parse(input)
 	if err != nil {
 		return err
 	}

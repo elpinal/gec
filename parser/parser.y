@@ -1,6 +1,6 @@
 %{
 
-package main
+package parser
 
 import (
         "github.com/elpinal/gec/ast"
