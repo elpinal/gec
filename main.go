@@ -305,6 +305,8 @@ func (b *Builder) genIR(expr ast.Expr, referredFrom string) (types.Expr, error) 
 		return &types.ECmp{op, e1, e2}, nil
 	case *ast.NilList:
 		return &types.ENil{}, nil
+	case *ast.ParenExpr:
+		return b.genIR(x.X, referredFrom)
 	}
 	return nil, fmt.Errorf("unknown expression: %[1]v (type: %[1]T)", expr)
 }
