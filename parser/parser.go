@@ -670,7 +670,7 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:166
 		{
-			yyVAL.expr = yyDollar[2].expr
+			yyVAL.expr = &ast.ParenExpr{X: yyDollar[2].expr}
 		}
 	case 32:
 		yyDollar = yyS[yypt-2 : yypt+1]

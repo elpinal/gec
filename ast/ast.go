@@ -111,3 +111,9 @@ func (x *Cmp) expr() {}
 type NilList struct{}
 
 func (x *NilList) expr() {}
+
+type ParenExpr struct {
+	X Expr
+}
+
+func (x *ParenExpr) expr() {}

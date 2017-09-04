@@ -164,7 +164,7 @@ atom:
         }
 |	'(' absexpr ')'
         {
-                $$ = $2
+                $$ = &ast.ParenExpr{X: $2}
         }
 |	'[' ']'
         {
