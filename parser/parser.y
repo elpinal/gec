@@ -76,13 +76,7 @@ decl:
 
 absexpr:
         abs
-        {
-                $$ = $1
-        }
         | cmpexpr
-        {
-                $$ = $1
-        }
         | IF cmpexpr THEN cmpexpr ELSE cmpexpr
         {
                 $$ = &ast.If{Cond: $2, E1: $4, E2: $6}
@@ -123,9 +117,6 @@ cmpexpr:
 
 expr:
         term
-        {
-                $$ = $1
-        }
         | expr '+' term
         {
                 $$ = &ast.Add{X: $1, Y: $3}
@@ -137,9 +128,6 @@ expr:
 
 term:
         factor
-        {
-                $$ = $1
-        }
         | term '*' factor
         {
                 $$ = &ast.Mul{X: $1, Y: $3}
@@ -151,9 +139,6 @@ term:
 
 factor:
         atom
-        {
-                $$ = $1
-        }
         | factor atom
         {
                 $$ = &ast.App{Fn: $1, Arg: $2}
