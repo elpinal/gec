@@ -15,12 +15,14 @@ import (
         decls []*ast.Decl
         expr  ast.Expr
         token token.Token
+        cmpop ast.CmpOp
 }
 
 %type <top>   top program withdecls withoutdecls
 %type <expr>  expr term factor factor1 atom topexpr abs cmpexpr
 %type <decl>  decl
 %type <decls> decls
+%type <cmpop> cmpop
 
 %token <token> ILLEGAL
 
@@ -107,29 +109,35 @@ abs:
 
 cmpexpr:
         expr
-        | expr EQ expr
+        | expr cmpop expr
         {
-                $$ = &ast.Cmp{Op: ast.Eq, LHS: $1, RHS: $3}
+                $$ = &ast.Cmp{Op: $2, LHS: $1, RHS: $3}
         }
-        | expr NE expr
+
+cmpop:
+        EQ
         {
-                $$ = &ast.Cmp{Op: ast.NE, LHS: $1, RHS: $3}
+                $$ = ast.Eq
         }
-        | expr '<' expr
+        | NE
         {
-                $$ = &ast.Cmp{Op: ast.LT, LHS: $1, RHS: $3}
+                $$ = ast.NE
         }
-        | expr '>' expr
+        | '<'
         {
-                $$ = &ast.Cmp{Op: ast.GT, LHS: $1, RHS: $3}
+                $$ = ast.LT
         }
-        | expr LE expr
+        | '>'
         {
-                $$ = &ast.Cmp{Op: ast.LE, LHS: $1, RHS: $3}
+                $$ = ast.GT
         }
-        | expr GE expr
+        | LE
         {
-                $$ = &ast.Cmp{Op: ast.GE, LHS: $1, RHS: $3}
+                $$ = ast.LE
+        }
+        | GE
+        {
+                $$ = ast.GE
         }
 
 expr:
