@@ -18,7 +18,7 @@ import (
 }
 
 %type <top> top program withdecls withoutdecls
-%type <expr> expr term factor atom topexpr abs cmpexpr
+%type <expr> expr term factor factor1 atom topexpr abs cmpexpr
 %type <decl> decl
 %type <decls> decls
 
@@ -128,14 +128,22 @@ expr:
         }
 
 term:
-        factor
-        | term '*' factor
+        factor1
+        | term '*' factor1
         {
                 $$ = &ast.Mul{X: $1, Y: $3}
         }
-        | term '/' factor
+        | term '/' factor1
         {
                 $$ = &ast.Div{X: $1, Y: $3}
+        }
+
+factor1:
+        factor
+        | factor1 SYMBOL factor
+        {
+                a := &ast.App{Fn: $2, Arg: $1}
+                $$ = &ast.App{Fn: a, Arg: $3}
         }
 
 factor:
