@@ -34,7 +34,7 @@ state 2
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 5
+	topexpr  goto 5
 	abs  goto 7
 	cmpexpr  goto 8
 	decl  goto 10
@@ -55,13 +55,13 @@ state 4
 
 
 state 5
-	top:  absexpr.    (4)
+	top:  topexpr.    (4)
 
 	.  reduce 4 (src line 37)
 
 
 state 6
-	top:  decls.newlines absexpr 
+	top:  decls.newlines topexpr 
 	decls:  decls.newlines decl 
 
 	NEWLINE  shift 23
@@ -70,19 +70,19 @@ state 6
 	newlines  goto 22
 
 state 7
-	absexpr:  abs.    (11)
+	topexpr:  abs.    (11)
 
 	.  reduce 11 (src line 77)
 
 
 state 8
-	absexpr:  cmpexpr.    (12)
+	topexpr:  cmpexpr.    (12)
 
 	.  reduce 12 (src line 79)
 
 
 state 9
-	absexpr:  IF.cmpexpr THEN cmpexpr ELSE cmpexpr 
+	topexpr:  IF.cmpexpr THEN cmpexpr ELSE cmpexpr 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -104,7 +104,7 @@ state 10
 
 
 state 11
-	abs:  '\\'.IDENT RARROW absexpr 
+	abs:  '\\'.IDENT RARROW topexpr 
 
 	IDENT  shift 26
 	.  error
@@ -133,8 +133,8 @@ state 12
 
 
 state 13
-	decl:  IDENT.'=' absexpr 
-	decl:  IDENT.SYMBOL IDENT '=' absexpr 
+	decl:  IDENT.'=' topexpr 
+	decl:  IDENT.SYMBOL IDENT '=' topexpr 
 	atom:  IDENT.    (31)
 
 	SYMBOL  shift 36
@@ -184,7 +184,7 @@ state 18
 
 
 state 19
-	atom:  '('.absexpr ')' 
+	atom:  '('.topexpr ')' 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -199,7 +199,7 @@ state 19
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 40
+	topexpr  goto 40
 	abs  goto 7
 	cmpexpr  goto 8
 
@@ -219,7 +219,7 @@ state 21
 
 
 state 22
-	top:  decls newlines.absexpr 
+	top:  decls newlines.topexpr 
 	decls:  decls newlines.decl 
 
 	NUM  shift 17
@@ -235,7 +235,7 @@ state 22
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 42
+	topexpr  goto 42
 	abs  goto 7
 	cmpexpr  goto 8
 	decl  goto 43
@@ -249,7 +249,7 @@ state 23
 	margin  goto 44
 
 state 24
-	absexpr:  IF cmpexpr.THEN cmpexpr ELSE cmpexpr 
+	topexpr:  IF cmpexpr.THEN cmpexpr ELSE cmpexpr 
 
 	THEN  shift 45
 	.  error
@@ -262,7 +262,7 @@ state 25
 
 
 state 26
-	abs:  '\\' IDENT.RARROW absexpr 
+	abs:  '\\' IDENT.RARROW topexpr 
 
 	RARROW  shift 46
 	.  error
@@ -387,7 +387,7 @@ state 34
 	atom  goto 16
 
 state 35
-	decl:  IDENT '='.absexpr 
+	decl:  IDENT '='.topexpr 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -402,12 +402,12 @@ state 35
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 55
+	topexpr  goto 55
 	abs  goto 7
 	cmpexpr  goto 8
 
 state 36
-	decl:  IDENT SYMBOL.IDENT '=' absexpr 
+	decl:  IDENT SYMBOL.IDENT '=' topexpr 
 
 	IDENT  shift 56
 	.  error
@@ -446,7 +446,7 @@ state 39
 
 
 state 40
-	atom:  '(' absexpr.')' 
+	atom:  '(' topexpr.')' 
 
 	')'  shift 59
 	.  error
@@ -459,7 +459,7 @@ state 41
 
 
 state 42
-	top:  decls newlines absexpr.    (5)
+	top:  decls newlines topexpr.    (5)
 
 	.  reduce 5 (src line 45)
 
@@ -479,7 +479,7 @@ state 44
 
 
 state 45
-	absexpr:  IF cmpexpr THEN.cmpexpr ELSE cmpexpr 
+	topexpr:  IF cmpexpr THEN.cmpexpr ELSE cmpexpr 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -495,7 +495,7 @@ state 45
 	cmpexpr  goto 60
 
 state 46
-	abs:  '\\' IDENT RARROW.absexpr 
+	abs:  '\\' IDENT RARROW.topexpr 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -510,7 +510,7 @@ state 46
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 61
+	topexpr  goto 61
 	abs  goto 7
 	cmpexpr  goto 8
 
@@ -595,13 +595,13 @@ state 54
 
 
 state 55
-	decl:  IDENT '=' absexpr.    (9)
+	decl:  IDENT '=' topexpr.    (9)
 
 	.  reduce 9 (src line 65)
 
 
 state 56
-	decl:  IDENT SYMBOL IDENT.'=' absexpr 
+	decl:  IDENT SYMBOL IDENT.'=' topexpr 
 
 	'='  shift 62
 	.  error
@@ -634,26 +634,26 @@ state 58
 	atom  goto 39
 
 state 59
-	atom:  '(' absexpr ')'.    (33)
+	atom:  '(' topexpr ')'.    (33)
 
 	.  reduce 33 (src line 160)
 
 
 state 60
-	absexpr:  IF cmpexpr THEN cmpexpr.ELSE cmpexpr 
+	topexpr:  IF cmpexpr THEN cmpexpr.ELSE cmpexpr 
 
 	ELSE  shift 63
 	.  error
 
 
 state 61
-	abs:  '\\' IDENT RARROW absexpr.    (14)
+	abs:  '\\' IDENT RARROW topexpr.    (14)
 
 	.  reduce 14 (src line 85)
 
 
 state 62
-	decl:  IDENT SYMBOL IDENT '='.absexpr 
+	decl:  IDENT SYMBOL IDENT '='.topexpr 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -668,12 +668,12 @@ state 62
 	term  goto 14
 	factor  goto 15
 	atom  goto 16
-	absexpr  goto 64
+	topexpr  goto 64
 	abs  goto 7
 	cmpexpr  goto 8
 
 state 63
-	absexpr:  IF cmpexpr THEN cmpexpr ELSE.cmpexpr 
+	topexpr:  IF cmpexpr THEN cmpexpr ELSE.cmpexpr 
 
 	NUM  shift 17
 	IDENT  shift 25
@@ -689,13 +689,13 @@ state 63
 	cmpexpr  goto 65
 
 state 64
-	decl:  IDENT SYMBOL IDENT '=' absexpr.    (10)
+	decl:  IDENT SYMBOL IDENT '=' topexpr.    (10)
 
 	.  reduce 10 (src line 70)
 
 
 state 65
-	absexpr:  IF cmpexpr THEN cmpexpr ELSE cmpexpr.    (13)
+	topexpr:  IF cmpexpr THEN cmpexpr ELSE cmpexpr.    (13)
 
 	.  reduce 13 (src line 80)
 

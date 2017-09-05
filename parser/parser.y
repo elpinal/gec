@@ -18,7 +18,7 @@ import (
 }
 
 %type <top> top program
-%type <expr> expr term factor atom absexpr abs cmpexpr
+%type <expr> expr term factor atom topexpr abs cmpexpr
 %type <decl> decl
 %type <decls> decls
 
@@ -35,14 +35,14 @@ program:
 margin: /* empty */ | margin NEWLINE
 
 top:
-        absexpr
+        topexpr
         {
                 $$ = &ast.WithDecls{Expr: $1}
                 if l, ok := yylex.(*exprLexer); ok {
                         l.expr = $$
                 }
         }
-        | decls newlines absexpr
+        | decls newlines topexpr
         {
                 $$ = &ast.WithDecls{Decls: $1, Expr: $3}
                 if l, ok := yylex.(*exprLexer); ok {
@@ -63,18 +63,18 @@ decls:
         }
 
 decl:
-        IDENT '=' absexpr
+        IDENT '=' topexpr
         {
                 $$ = &ast.Decl{LHS: $1, RHS: $3}
         }
-        | IDENT SYMBOL IDENT '=' absexpr
+        | IDENT SYMBOL IDENT '=' topexpr
         {
                 f := &ast.Abs{Param: $3, Body: $5}
                 g := &ast.Abs{Param: $1, Body: f}
                 $$ = &ast.Decl{LHS: $2, RHS: g}
         }
 
-absexpr:
+topexpr:
         abs
         | cmpexpr
         | IF cmpexpr THEN cmpexpr ELSE cmpexpr
@@ -83,7 +83,7 @@ absexpr:
         }
 
 abs:
-        '\\' IDENT RARROW absexpr
+        '\\' IDENT RARROW topexpr
         {
                 $$ = &ast.Abs{Param: $2, Body: $4}
         }
@@ -157,7 +157,7 @@ atom:
         {
                 $$ = &ast.Bool{X: $1}
         }
-        | '(' absexpr ')'
+        | '(' topexpr ')'
         {
                 $$ = &ast.ParenExpr{X: $2}
         }
