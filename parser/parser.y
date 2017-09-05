@@ -45,7 +45,7 @@ import (
 %%
 
 program:
-	margin top margin
+        margin top margin
         {
                 $$ = $2
                 if l, ok := yylex.(*exprLexer); ok {
