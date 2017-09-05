@@ -10,16 +10,16 @@ import (
 %}
 
 %union {
-        top *ast.WithDecls
-        decl *ast.Decl
+        top   *ast.WithDecls
+        decl  *ast.Decl
         decls []*ast.Decl
-        expr ast.Expr
+        expr  ast.Expr
         token token.Token
 }
 
-%type <top> top program withdecls withoutdecls
-%type <expr> expr term factor factor1 atom topexpr abs cmpexpr
-%type <decl> decl
+%type <top>   top program withdecls withoutdecls
+%type <expr>  expr term factor factor1 atom topexpr abs cmpexpr
+%type <decl>  decl
 %type <decls> decls
 
 %token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE LE GE SYMBOL
