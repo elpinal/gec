@@ -22,7 +22,20 @@ import (
 %type <decl>  decl
 %type <decls> decls
 
-%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE LE GE SYMBOL
+%token <token> ILLEGAL
+%token <token> NEWLINE
+%token <token> NUM
+%token <token> IDENT
+%token <token> RARROW
+%token <token> BOOL
+%token <token> IF
+%token <token> THEN
+%token <token> ELSE
+%token <token> EQ
+%token <token> NE
+%token <token> LE
+%token <token> GE
+%token <token> SYMBOL
 
 %%
 

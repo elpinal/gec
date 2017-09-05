@@ -3,7 +3,7 @@ state 0
 	$accept: .program $end 
 	margin: .    (2)
 
-	.  reduce 2 (src line 38)
+	.  reduce 2 (src line 51)
 
 	program  goto 1
 	margin  goto 2
@@ -47,32 +47,32 @@ state 3
 	program:  margin top.margin 
 	margin: .    (2)
 
-	.  reduce 2 (src line 38)
+	.  reduce 2 (src line 51)
 
 	margin  goto 24
 
 state 4
 	margin:  margin NEWLINE.    (3)
 
-	.  reduce 3 (src line 38)
+	.  reduce 3 (src line 51)
 
 
 state 5
 	top:  withoutdecls.    (4)
 
-	.  reduce 4 (src line 40)
+	.  reduce 4 (src line 53)
 
 
 state 6
 	top:  withdecls.    (5)
 
-	.  reduce 5 (src line 40)
+	.  reduce 5 (src line 53)
 
 
 state 7
 	withoutdecls:  topexpr.    (6)
 
-	.  reduce 6 (src line 42)
+	.  reduce 6 (src line 55)
 
 
 state 8
@@ -87,13 +87,13 @@ state 8
 state 9
 	topexpr:  abs.    (13)
 
-	.  reduce 13 (src line 78)
+	.  reduce 13 (src line 91)
 
 
 state 10
 	topexpr:  cmpexpr.    (14)
 
-	.  reduce 14 (src line 80)
+	.  reduce 14 (src line 93)
 
 
 state 11
@@ -116,7 +116,7 @@ state 11
 state 12
 	decls:  decl.    (10)
 
-	.  reduce 10 (src line 61)
+	.  reduce 10 (src line 74)
 
 
 state 13
@@ -145,7 +145,7 @@ state 14
 	'>'  shift 33
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 17 (src line 92)
+	.  reduce 17 (src line 105)
 
 
 15: shift/reduce conflict (shift 39(0), red'n 35(0)) on SYMBOL
@@ -156,7 +156,7 @@ state 15
 
 	SYMBOL  shift 39
 	'='  shift 38
-	.  reduce 35 (src line 161)
+	.  reduce 35 (src line 174)
 
 
 state 16
@@ -166,7 +166,7 @@ state 16
 
 	'*'  shift 40
 	'/'  shift 41
-	.  reduce 24 (src line 119)
+	.  reduce 24 (src line 132)
 
 
 state 17
@@ -174,7 +174,7 @@ state 17
 	factor1:  factor1.SYMBOL factor 
 
 	SYMBOL  shift 42
-	.  reduce 27 (src line 130)
+	.  reduce 27 (src line 143)
 
 
 state 18
@@ -186,26 +186,26 @@ state 18
 	BOOL  shift 21
 	'('  shift 22
 	'['  shift 23
-	.  reduce 30 (src line 141)
+	.  reduce 30 (src line 154)
 
 	atom  goto 43
 
 state 19
 	factor:  atom.    (32)
 
-	.  reduce 32 (src line 149)
+	.  reduce 32 (src line 162)
 
 
 state 20
 	atom:  NUM.    (34)
 
-	.  reduce 34 (src line 156)
+	.  reduce 34 (src line 169)
 
 
 state 21
 	atom:  BOOL.    (36)
 
-	.  reduce 36 (src line 165)
+	.  reduce 36 (src line 178)
 
 
 state 22
@@ -241,7 +241,7 @@ state 24
 	margin:  margin.NEWLINE 
 
 	NEWLINE  shift 4
-	.  reduce 1 (src line 29)
+	.  reduce 1 (src line 42)
 
 
 state 25
@@ -271,7 +271,7 @@ state 26
 	newlines:  NEWLINE.margin 
 	margin: .    (2)
 
-	.  reduce 2 (src line 38)
+	.  reduce 2 (src line 51)
 
 	margin  goto 48
 
@@ -285,7 +285,7 @@ state 27
 state 28
 	atom:  IDENT.    (35)
 
-	.  reduce 35 (src line 161)
+	.  reduce 35 (src line 174)
 
 
 state 29
@@ -493,7 +493,7 @@ state 42
 state 43
 	factor:  factor atom.    (33)
 
-	.  reduce 33 (src line 151)
+	.  reduce 33 (src line 164)
 
 
 state 44
@@ -506,19 +506,19 @@ state 44
 state 45
 	atom:  '[' ']'.    (38)
 
-	.  reduce 38 (src line 173)
+	.  reduce 38 (src line 186)
 
 
 state 46
 	withdecls:  decls newlines topexpr.    (7)
 
-	.  reduce 7 (src line 48)
+	.  reduce 7 (src line 61)
 
 
 state 47
 	decls:  decls newlines decl.    (9)
 
-	.  reduce 9 (src line 56)
+	.  reduce 9 (src line 69)
 
 
 state 48
@@ -526,7 +526,7 @@ state 48
 	newlines:  NEWLINE margin.    (8)
 
 	NEWLINE  shift 4
-	.  reduce 8 (src line 54)
+	.  reduce 8 (src line 67)
 
 
 state 49
@@ -574,7 +574,7 @@ state 51
 
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 18 (src line 94)
+	.  reduce 18 (src line 107)
 
 
 state 52
@@ -584,7 +584,7 @@ state 52
 
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 19 (src line 98)
+	.  reduce 19 (src line 111)
 
 
 state 53
@@ -594,7 +594,7 @@ state 53
 
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 20 (src line 102)
+	.  reduce 20 (src line 115)
 
 
 state 54
@@ -604,7 +604,7 @@ state 54
 
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 21 (src line 106)
+	.  reduce 21 (src line 119)
 
 
 state 55
@@ -614,7 +614,7 @@ state 55
 
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 22 (src line 110)
+	.  reduce 22 (src line 123)
 
 
 state 56
@@ -624,7 +624,7 @@ state 56
 
 	'+'  shift 36
 	'-'  shift 37
-	.  reduce 23 (src line 114)
+	.  reduce 23 (src line 127)
 
 
 state 57
@@ -634,7 +634,7 @@ state 57
 
 	'*'  shift 40
 	'/'  shift 41
-	.  reduce 25 (src line 121)
+	.  reduce 25 (src line 134)
 
 
 state 58
@@ -644,13 +644,13 @@ state 58
 
 	'*'  shift 40
 	'/'  shift 41
-	.  reduce 26 (src line 125)
+	.  reduce 26 (src line 138)
 
 
 state 59
 	decl:  IDENT '=' topexpr.    (11)
 
-	.  reduce 11 (src line 66)
+	.  reduce 11 (src line 79)
 
 
 state 60
@@ -665,7 +665,7 @@ state 61
 	factor1:  factor1.SYMBOL factor 
 
 	SYMBOL  shift 42
-	.  reduce 28 (src line 132)
+	.  reduce 28 (src line 145)
 
 
 state 62
@@ -673,7 +673,7 @@ state 62
 	factor1:  factor1.SYMBOL factor 
 
 	SYMBOL  shift 42
-	.  reduce 29 (src line 136)
+	.  reduce 29 (src line 149)
 
 
 state 63
@@ -685,14 +685,14 @@ state 63
 	BOOL  shift 21
 	'('  shift 22
 	'['  shift 23
-	.  reduce 31 (src line 143)
+	.  reduce 31 (src line 156)
 
 	atom  goto 43
 
 state 64
 	atom:  '(' topexpr ')'.    (37)
 
-	.  reduce 37 (src line 169)
+	.  reduce 37 (src line 182)
 
 
 state 65
@@ -705,7 +705,7 @@ state 65
 state 66
 	abs:  '\\' IDENT RARROW topexpr.    (16)
 
-	.  reduce 16 (src line 86)
+	.  reduce 16 (src line 99)
 
 
 state 67
@@ -749,13 +749,13 @@ state 68
 state 69
 	decl:  IDENT SYMBOL IDENT '=' topexpr.    (12)
 
-	.  reduce 12 (src line 71)
+	.  reduce 12 (src line 84)
 
 
 state 70
 	topexpr:  IF cmpexpr THEN cmpexpr ELSE cmpexpr.    (15)
 
-	.  reduce 15 (src line 81)
+	.  reduce 15 (src line 94)
 
 
 29 terminals, 17 nonterminals
