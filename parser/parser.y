@@ -18,7 +18,7 @@ import (
 }
 
 %type <top> top program
-%type <expr> expr term factor atom topexpr abs cmpexpr
+%type <expr> expr term factor atom topexpr abs cmpexpr withdecls withoutdecls
 %type <decl> decl
 %type <decls> decls
 
@@ -35,19 +35,31 @@ program:
 margin: /* empty */ | margin NEWLINE
 
 top:
-        topexpr
+        withoutdecls
         {
-                $$ = &ast.WithDecls{Expr: $1}
+                $$ = $1
                 if l, ok := yylex.(*exprLexer); ok {
                         l.expr = $$
                 }
         }
-        | decls newlines topexpr
+        | withdecls
         {
-                $$ = &ast.WithDecls{Decls: $1, Expr: $3}
+                $$ = $1
                 if l, ok := yylex.(*exprLexer); ok {
                         l.expr = $$
                 }
+        }
+
+withoutdecls:
+        topexpr
+        {
+                $$ = &ast.WithDecls{Expr: $1}
+        }
+
+withdecls:
+        decls newlines topexpr
+        {
+                $$ = &ast.WithDecls{Decls: $1, Expr: $3}
         }
 
 newlines: NEWLINE margin
