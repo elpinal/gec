@@ -32,6 +32,8 @@ program:
                 $$ = $2
         }
 
+margin: /* empty */ | margin NEWLINE
+
 top:
         absexpr
         {
@@ -47,8 +49,6 @@ top:
                         l.expr = $$
                 }
         }
-
-margin: /* empty */ | margin NEWLINE
 
 newlines: NEWLINE margin
 
@@ -86,6 +86,12 @@ absexpr:
         | IF cmpexpr THEN cmpexpr ELSE cmpexpr
         {
                 $$ = &ast.If{Cond: $2, E1: $4, E2: $6}
+        }
+
+abs:
+        '\\' IDENT RARROW absexpr
+        {
+                $$ = &ast.Abs{Param: $2, Body: $4}
         }
 
 cmpexpr:
@@ -173,12 +179,6 @@ atom:
         | '[' ']'
         {
                 $$ = &ast.NilList{}
-        }
-
-abs:
-        '\\' IDENT RARROW absexpr
-        {
-                $$ = &ast.Abs{Param: $2, Body: $4}
         }
 
 %%
