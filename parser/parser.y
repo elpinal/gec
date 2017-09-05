@@ -17,8 +17,8 @@ import (
         token token.Token
 }
 
-%type <top> top program
-%type <expr> expr term factor atom topexpr abs cmpexpr withdecls withoutdecls
+%type <top> top program withdecls withoutdecls
+%type <expr> expr term factor atom topexpr abs cmpexpr
 %type <decl> decl
 %type <decls> decls
 
@@ -30,25 +30,14 @@ program:
 	margin top margin
         {
                 $$ = $2
+                if l, ok := yylex.(*exprLexer); ok {
+                        l.expr = $$
+                }
         }
 
 margin: /* empty */ | margin NEWLINE
 
-top:
-        withoutdecls
-        {
-                $$ = $1
-                if l, ok := yylex.(*exprLexer); ok {
-                        l.expr = $$
-                }
-        }
-        | withdecls
-        {
-                $$ = $1
-                if l, ok := yylex.(*exprLexer); ok {
-                        l.expr = $$
-                }
-        }
+top: withoutdecls | withdecls
 
 withoutdecls:
         topexpr
