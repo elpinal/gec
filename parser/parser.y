@@ -40,7 +40,7 @@ top:
                         l.expr = $$
                 }
         }
-|	decls newlines absexpr
+        | decls newlines absexpr
         {
                 $$ = &ast.WithDecls{Decls: $1, Expr: $3}
                 if l, ok := yylex.(*exprLexer); ok {
@@ -48,18 +48,16 @@ top:
                 }
         }
 
-margin:
-|	margin NEWLINE
+margin: /* empty */ | margin NEWLINE
 
-newlines:
-        NEWLINE margin
+newlines: NEWLINE margin
 
 decls:
         decls newlines decl
         {
                 $$ = append($1, $3)
         }
-|       decl
+        | decl
         {
                 $$ = []*ast.Decl{$1}
         }
@@ -69,7 +67,7 @@ decl:
         {
                 $$ = &ast.Decl{LHS: $1, RHS: $3}
         }
-|	IDENT SYMBOL IDENT '=' absexpr
+        | IDENT SYMBOL IDENT '=' absexpr
         {
                 f := &ast.Abs{Param: $3, Body: $5}
                 g := &ast.Abs{Param: $1, Body: f}
@@ -81,38 +79,38 @@ absexpr:
         {
                 $$ = $1
         }
-|	cmpexpr
+        | cmpexpr
         {
                 $$ = $1
         }
-|	IF cmpexpr THEN cmpexpr ELSE cmpexpr
+        | IF cmpexpr THEN cmpexpr ELSE cmpexpr
         {
                 $$ = &ast.If{Cond: $2, E1: $4, E2: $6}
         }
 
 cmpexpr:
         expr
-|	expr EQ expr
+        | expr EQ expr
         {
                 $$ = &ast.Cmp{Op: ast.Eq, LHS: $1, RHS: $3}
         }
-|	expr NE expr
+        | expr NE expr
         {
                 $$ = &ast.Cmp{Op: ast.NE, LHS: $1, RHS: $3}
         }
-|	expr '<' expr
+        | expr '<' expr
         {
                 $$ = &ast.Cmp{Op: ast.LT, LHS: $1, RHS: $3}
         }
-|	expr '>' expr
+        | expr '>' expr
         {
                 $$ = &ast.Cmp{Op: ast.GT, LHS: $1, RHS: $3}
         }
-|	expr LE expr
+        | expr LE expr
         {
                 $$ = &ast.Cmp{Op: ast.LE, LHS: $1, RHS: $3}
         }
-|	expr GE expr
+        | expr GE expr
         {
                 $$ = &ast.Cmp{Op: ast.GE, LHS: $1, RHS: $3}
         }
@@ -122,11 +120,11 @@ expr:
         {
                 $$ = $1
         }
-|	expr '+' term
+        | expr '+' term
         {
                 $$ = &ast.Add{X: $1, Y: $3}
         }
-|	expr '-' term
+        | expr '-' term
         {
                 $$ = &ast.Sub{X: $1, Y: $3}
         }
@@ -136,11 +134,11 @@ term:
         {
                 $$ = $1
         }
-|	term '*' factor
+        | term '*' factor
         {
                 $$ = &ast.Mul{X: $1, Y: $3}
         }
-|	term '/' factor
+        | term '/' factor
         {
                 $$ = &ast.Div{X: $1, Y: $3}
         }
@@ -150,7 +148,7 @@ factor:
         {
                 $$ = $1
         }
-|	factor atom
+        | factor atom
         {
                 $$ = &ast.App{Fn: $1, Arg: $2}
         }
@@ -160,19 +158,19 @@ atom:
         {
                 $$ = &ast.Int{X: $1}
         }
-|	IDENT
+        | IDENT
         {
                 $$ = &ast.Ident{Name: $1}
         }
-|	BOOL
+        | BOOL
         {
                 $$ = &ast.Bool{X: $1}
         }
-|	'(' absexpr ')'
+        | '(' absexpr ')'
         {
                 $$ = &ast.ParenExpr{X: $2}
         }
-|	'[' ']'
+        | '[' ']'
         {
                 $$ = &ast.NilList{}
         }
