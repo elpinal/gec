@@ -54,6 +54,10 @@ func isAlphaNum(c rune) bool {
 	return isAlphabet(c) || isNumber(c)
 }
 
+func isSymbol(c rune) bool {
+	return c == '&'
+}
+
 func (x *exprLexer) Lex(yylval *yySymType) int {
 	for {
 		x.tokLine = x.line
@@ -100,6 +104,8 @@ func (x *exprLexer) Lex(yylval *yySymType) int {
 		case '+', '*', '\\', '(', ')', '[', ']':
 			x.next()
 			return int(c)
+		case '&':
+			return x.symbols(yylval)
 		case ' ':
 			x.next()
 		case '\n':
@@ -124,6 +130,10 @@ func (x *exprLexer) num(yylval *yySymType) int {
 
 func (x *exprLexer) ident(yylval *yySymType) int {
 	return x.takeWhile(IDENT, isAlphaNum, yylval)
+}
+
+func (x *exprLexer) symbols(yylval *yySymType) int {
+	return x.takeWhile(SYMBOL, isSymbol, yylval)
 }
 
 func (x *exprLexer) takeWhile(kind int, f func(rune) bool, yylval *yySymType) int {

@@ -22,7 +22,7 @@ import (
 %type <decl> decl
 %type <decls> decls
 
-%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE LE GE
+%token <token> ILLEGAL NEWLINE NUM IDENT RARROW BOOL IF THEN ELSE EQ NE LE GE SYMBOL
 
 %%
 
@@ -68,6 +68,12 @@ decl:
         IDENT '=' absexpr
         {
                 $$ = &ast.Decl{LHS: $1, RHS: $3}
+        }
+|	IDENT SYMBOL IDENT '=' absexpr
+        {
+                f := &ast.Abs{Param: $3, Body: $5}
+                g := &ast.Abs{Param: $1, Body: f}
+                $$ = &ast.Decl{LHS: $2, RHS: g}
         }
 
 absexpr:
