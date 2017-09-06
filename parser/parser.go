@@ -635,7 +635,7 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		//line parser.y:168
 		{
-			a := &ast.App{Fn: yyDollar[2].token, Arg: yyDollar[1].expr}
+			a := &ast.App{Fn: &ast.Ident{Name: yyDollar[2].token}, Arg: yyDollar[1].expr}
 			yyVAL.expr = &ast.App{Fn: a, Arg: yyDollar[3].expr}
 		}
 	case 34:

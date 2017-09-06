@@ -166,7 +166,7 @@ factor1:
         factor
         | factor1 SYMBOL factor
         {
-                a := &ast.App{Fn: $2, Arg: $1}
+                a := &ast.App{Fn: &ast.Ident{Name: $2}, Arg: $1}
                 $$ = &ast.App{Fn: a, Arg: $3}
         }
 
