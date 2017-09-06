@@ -15,6 +15,7 @@ import (
 	"llvm.org/llvm/bindings/go/llvm"
 
 	"github.com/k0kubun/pp"
+	"github.com/pkg/errors"
 )
 
 func main() {
@@ -25,16 +26,20 @@ func main() {
 		fmt.Fprintln(os.Stdout, "gec: no Elacht source file given")
 		os.Exit(1)
 	}
-	b, err := ioutil.ReadFile(flag.Arg(0))
-	if err != nil {
-		fmt.Fprintf(os.Stdout, "gec: %v\n", err)
-		os.Exit(1)
-	}
-	err = run(b, flag.Arg(0), *printIR, logFile)
+
+	err := runMain(flag.Arg(0), *printIR, logFile)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
+}
+
+func runMain(filename string, printIR bool, logFile *string) error {
+	b, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return errors.Wrap(err, "gec")
+	}
+	return run(b, filename, printIR, logFile)
 }
 
 type Builder struct {
