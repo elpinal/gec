@@ -27,14 +27,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	err := runMain(flag.Arg(0), *printIR, logFile)
+	err := runMain(flag.Arg(0), *printIR, *logFile)
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 }
 
-func runMain(filename string, printIR bool, logFile *string) error {
+func runMain(filename string, printIR bool, logFile string) error {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return errors.Wrap(err, "gec")
@@ -62,7 +62,7 @@ func newBuilder(lb llvm.Builder) *Builder {
 	}
 }
 
-func run(input []byte, filename string, printIR bool, logFile *string) error {
+func run(input []byte, filename string, printIR bool, logFile string) error {
 	builder := newBuilder(llvm.NewBuilder())
 	builder.module = llvm.NewModule(filename)
 
@@ -104,8 +104,8 @@ func run(input []byte, filename string, printIR bool, logFile *string) error {
 	}
 	builder.CreateRet(v)
 
-	if logFile != nil {
-		err := ioutil.WriteFile(*logFile, []byte(builder.module.String()), 0666)
+	if logFile != "" {
+		err := ioutil.WriteFile(logFile, []byte(builder.module.String()), 0666)
 		if err != nil {
 			return errors.Wrap(err, "printing IR")
 		}
