@@ -105,7 +105,10 @@ func run(input []byte, filename string, printIR bool, logFile *string) error {
 	builder.CreateRet(v)
 
 	if logFile != nil {
-		ioutil.WriteFile(*logFile, []byte(builder.module.String()), 0666)
+		err := ioutil.WriteFile(*logFile, []byte(builder.module.String()), 0666)
+		if err != nil {
+			return errors.Wrap(err, "printing IR")
+		}
 	}
 
 	if err := llvm.VerifyModule(builder.module, llvm.ReturnStatusAction); err != nil {
